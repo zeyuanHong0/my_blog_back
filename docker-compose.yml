@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: blog-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: blog_db  # 自动创建数据库
+    ports:
+      - '3308:3306'  # 宿主机端口:容器端口
+    volumes:
+      - blog_mysql_data:/var/lib/mysql  # 使用命名卷
+    command: --default-authentication-plugin=mysql_native_password
+
+volumes:
+  blog_mysql_data:  # 不会在项目目录创建文件夹
