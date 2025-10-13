@@ -1,19 +1,22 @@
-import { Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
+
 import { AuthService } from './auth.service';
+import { SignupUserDto } from './dto/signup-user.dto';
+import { SigninUserDto } from './dto/signin-user.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('user/login')
-  login() {
-    // Implement login logic here
-    return { message: 'Login successful' };
+  @Post('/signin')
+  async login(@Body() body: SigninUserDto) {
+    // 登录
+    return this.authService.signin(body);
   }
 
-  @Post('user/register')
-  register() {
-    // Implement registration logic here
-    return { message: 'Registration successful' };
+  @Post('/signup')
+  async register(@Body() body: SignupUserDto) {
+    // 注册
+    return this.authService.signup(body);
   }
 }
