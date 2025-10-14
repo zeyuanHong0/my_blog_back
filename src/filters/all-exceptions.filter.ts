@@ -31,7 +31,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         if (Array.isArray(r.message)) {
           message = r.message.join('; ');
         } else {
-          message = JSON.stringify(r);
+          message = r.message as string;
         }
       }
     } else if (exception instanceof QueryFailedError) {
