@@ -6,6 +6,5 @@ export enum ConfigEnum {
   DB_USERNAME = 'DB_USERNAME',
   DB_PASSWORD = 'DB_PASSWORD',
   DB_NAME = 'DB_NAME',
-  API_KEY = 'API_KEY',
-  API_SECRET = 'API_SECRET',
+  JWT_SECRET = 'JWT_SECRET',
 }
