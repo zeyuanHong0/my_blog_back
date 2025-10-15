@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+// eslint-disable-next-line import/no-unresolved
+import { ServeStaticModule } from '@nestjs/serve-static';
 import * as dotenv from 'dotenv';
 import * as Joi from 'joi';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -15,6 +17,7 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { BlogModule } from './blog/blog.module';
 import { TagModule } from './tag/tag.module';
+import { UploadModule } from './upload/upload.module';
 
 // console.log('NODE_ENV:', process.env.NODE_ENV);
 const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
@@ -40,6 +43,10 @@ const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
         [ConfigEnum.DB_PASSWORD]: Joi.string().default(''),
         [ConfigEnum.DB_NAME]: Joi.string().default('test_db'),
       }),
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'files'),
+      serveRoot: '/files',
     }),
     TypeOrmModule.forRoot(connectionParams),
     LoggerModule.forRoot({
@@ -68,6 +75,7 @@ const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
     AuthModule,
     BlogModule,
     TagModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],
