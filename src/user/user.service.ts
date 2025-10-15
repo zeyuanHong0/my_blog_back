@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 
 @Injectable()
@@ -14,9 +13,9 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const { name, password } = createUserDto;
+    const { username, password, email } = createUserDto;
     // 保存用户
-    const user = this.userRepository.create({ name, password });
+    const user = this.userRepository.create({ username, password, email });
     await this.userRepository.save(user);
     return {
       code: 200,
@@ -24,12 +23,51 @@ export class UserService {
     };
   }
 
+  async findAll(username?: string) {
+    const users = await this.userRepository.find({
+      where: {
+        ...(username && { username }),
+      },
+    });
+    return {
+      code: 200,
+      msg: '操作成功',
+      data: users,
+    };
+  }
+
+  async getProfile(id: string) {
+    const user = await this.userRepository.findOne({
+      where: {
+        id,
+      },
+      select: ['id', 'username', 'email', 'accountType'],
+    });
+    return {
+      code: 200,
+      msg: '操作成功',
+      data: {
+        userInfo: user,
+      },
+    };
+  }
+
+  async findOne(username: string) {
+    const user = await this.userRepository.findOne({
+      where: {
+        username,
+      },
+      select: ['id', 'username', 'password'],
+    });
+    return user;
+  }
+
   async getUserInfoById(id: string) {
     const user = await this.userRepository.findOne({
       where: {
         id,
       },
-      select: ['id', 'name', 'password'],
+      select: ['id', 'username', 'password'],
       relations: ['profile'],
     });
     return {
