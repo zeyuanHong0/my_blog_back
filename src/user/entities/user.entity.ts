@@ -1,13 +1,10 @@
+import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import {
-  Column,
-  Entity,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-  OneToMany,
-} from 'typeorm';
+  FormattedCreateDateColumn,
+  FormattedUpdateDateColumn,
+} from '@/common/decorators/formatted-date-column.decorator';
 
-import { Blog } from '../../blog/entities/blog.entity';
+import { Blog } from '@/blog/entities/blog.entity';
 
 @Entity('users')
 export class User {
@@ -15,7 +12,7 @@ export class User {
   id: string;
 
   @Column({ unique: true })
-  name: string;
+  username: string;
 
   @Column()
   password: string;
@@ -23,10 +20,13 @@ export class User {
   @Column()
   email: string;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @Column({ default: 'test' })
+  accountType: string;
+
+  @FormattedCreateDateColumn()
   createTime: Date;
 
-  @UpdateDateColumn({ type: 'timestamp' })
+  @FormattedUpdateDateColumn()
   updateTime: Date;
 
   @Column({ type: 'tinyint', default: 0 })

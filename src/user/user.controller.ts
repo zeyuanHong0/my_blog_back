@@ -3,15 +3,19 @@ import {
   Get,
   Post,
   Body,
-  Put,
   Param,
   Delete,
-  Query,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 
+import { CurrentUser } from '@/common/decorators/current-user.decorator';
+import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
+import { type JwtPayload } from '@/auth/types/jwt-payload.type';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 
+@UseGuards(JwtAuthGuard)
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -19,6 +23,12 @@ export class UserController {
   @Post('addUser')
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
+  }
+
+  // 获取当前用户信息
+  @Get('/profile')
+  getProfile(@CurrentUser() user: JwtPayload) {
+    return this.userService.getProfile(user.id);
   }
 
   @Get('getUserInfo/:id')
