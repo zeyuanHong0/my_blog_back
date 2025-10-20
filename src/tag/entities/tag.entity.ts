@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
   ManyToMany,
 } from 'typeorm';
-import { Blog } from '../../blog/entities/blog.entity';
+import { Blog } from '@/blog/entities/blog.entity';
 
 @Entity('tags')
 export class Tag {
