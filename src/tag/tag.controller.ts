@@ -3,10 +3,13 @@ import {
   Get,
   Post,
   Body,
+  Query,
   Param,
   Delete,
   UseGuards,
+  Put,
 } from '@nestjs/common';
+
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { TagService } from './tag.service';
 import { CreateTagDto } from './dto/create-tag.dto';
@@ -27,12 +30,21 @@ export class TagController {
     return this.tagService.findAll();
   }
 
+  @Get('getTagListByPage')
+  findByPage(
+    @Query('name') name: string,
+    @Query('pageNum') pageNum: number,
+    @Query('pageSize') pageSize: number,
+  ) {
+    return this.tagService.findByPage(name, pageNum, pageSize);
+  }
+
   @Get('getTagInfo/:id')
   findOne(@Param('id') id: string) {
     return this.tagService.findOne(id);
   }
 
-  @Post('updateTag')
+  @Put('updateTag')
   update(@Body() updateTagDto: UpdateTagDto) {
     return this.tagService.update(updateTagDto);
   }
