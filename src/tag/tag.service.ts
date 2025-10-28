@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
@@ -32,6 +32,28 @@ export class TagService {
       code: 200,
       msg: '操作成功',
       data: tagList,
+    };
+  }
+
+  async findByPage(name: string, pageNum: number, pageSize: number) {
+    const [tagList, total] = await this.tagRepository.findAndCount({
+      where: { is_delete: 0, name: name ? Like(`%${name}%`) : undefined },
+      select: ['id', 'name', 'icon', 'createTime', 'updateTime'],
+      skip: (pageNum - 1) * pageSize,
+      take: pageSize,
+      order: {
+        createTime: 'DESC',
+      },
+    });
+    return {
+      code: 200,
+      msg: '操作成功',
+      data: {
+        list: tagList,
+        total,
+        pageNum: Number(pageNum),
+        pageSize: Number(pageSize),
+      },
     };
   }
 
