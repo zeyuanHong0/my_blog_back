@@ -9,9 +9,13 @@ import {
   JoinTable,
   JoinColumn,
 } from 'typeorm';
+import {
+  FormattedCreateDateColumn,
+  FormattedUpdateDateColumn,
+} from '@/common/decorators/formatted-date-column.decorator';
 
-import { User } from '../../user/entities/user.entity';
-import { Tag } from '../../tag/entities/tag.entity';
+import { User } from '@/user/entities/user.entity';
+import { Tag } from '@/tag/entities/tag.entity';
 
 @Entity('blogs')
 export class Blog {
@@ -24,8 +28,11 @@ export class Blog {
   @Column()
   description: string;
 
-  @Column()
+  @Column({ type: 'text' })
   content: string;
+
+  @Column({ type: 'tinyint', default: 0 })
+  published: number; // 0 未发布，1 已发布
 
   @ManyToOne(() => User, (user) => user.blogs)
   @JoinColumn({ name: 'createUser' })
@@ -39,10 +46,10 @@ export class Blog {
   })
   tags: Tag[];
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @FormattedCreateDateColumn()
   createTime: Date;
 
-  @UpdateDateColumn({ type: 'timestamp' })
+  @FormattedUpdateDateColumn()
   updateTime: Date;
 
   @Column({ type: 'tinyint', default: 0 })
