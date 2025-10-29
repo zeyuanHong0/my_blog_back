@@ -3,21 +3,29 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
+
+import { CurrentUser } from '@/common/decorators/current-user.decorator';
+import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
+import { type JwtPayload } from '@/auth/types/jwt-payload.type';
 import { BlogService } from './blog.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 
+@UseGuards(JwtAuthGuard)
 @Controller('blog')
 export class BlogController {
   constructor(private readonly blogService: BlogService) {}
 
-  @Post()
-  create(@Body() createBlogDto: CreateBlogDto) {
-    return this.blogService.create(createBlogDto);
+  @Post('createBlog')
+  create(
+    @Body() createBlogDto: CreateBlogDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.blogService.create(createBlogDto, user.id);
   }
 
   @Get()
@@ -25,17 +33,17 @@ export class BlogController {
     return this.blogService.findAll();
   }
 
-  @Get(':id')
+  @Get('getBlogInfo/:id')
   findOne(@Param('id') id: string) {
     return this.blogService.findOne(id);
   }
 
-  @Patch(':id')
+  @Post('updateBlog')
   update(@Param('id') id: string, @Body() updateBlogDto: UpdateBlogDto) {
     return this.blogService.update(id, updateBlogDto);
   }
 
-  @Delete(':id')
+  @Delete('deleteBlog/:id')
   remove(@Param('id') id: string) {
     return this.blogService.remove(id);
   }
