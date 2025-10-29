@@ -1,10 +1,4 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsOptional,
-  IsArray,
-  IsUUID,
-} from 'class-validator';
+import { IsString, IsNotEmpty, IsArray, ArrayMinSize } from 'class-validator';
 
 export class CreateBlogDto {
   @IsString()
@@ -19,12 +13,10 @@ export class CreateBlogDto {
   @IsNotEmpty()
   content: string;
 
-  @IsUUID()
   @IsNotEmpty()
-  createUser: string;
+  published: number;
 
   @IsArray()
-  @IsOptional()
-  @IsUUID('4', { each: true })
-  tagIds?: string[];
+  @ArrayMinSize(1)
+  tags: string[];
 }
