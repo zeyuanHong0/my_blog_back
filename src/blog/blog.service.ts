@@ -59,43 +59,72 @@ export class BlogService {
     });
   }
 
+  async findByPage(title: string, pageNum: number, pageSize: number) {
+    const queryBuilder = this.blogRepository
+      .createQueryBuilder('blog')
+      .leftJoinAndSelect('blog.tags', 'tag')
+      .select([
+        'blog.id',
+        'blog.title',
+        'blog.published',
+        'blog.createTime',
+        'blog.updateTime',
+        'tag.id',
+        'tag.name',
+      ])
+      .where('blog.is_delete = :isDelete', { isDelete: 0 })
+      .orderBy('blog.createTime', 'DESC')
+      .skip((pageNum - 1) * pageSize)
+      .take(pageSize);
+
+    // 如果有标题搜索条件
+    if (title) {
+      queryBuilder.andWhere('blog.title LIKE :title', {
+        title: `%${title}%`,
+      });
+    }
+
+    const [blogList, total] = await queryBuilder.getManyAndCount();
+
+    return {
+      code: 200,
+      msg: '操作成功',
+      data: {
+        list: blogList,
+        total,
+        pageNum: Number(pageNum),
+        pageSize: Number(pageSize),
+      },
+    };
+  }
+
   async findOne(id: string) {
-    const blog = await this.blogRepository.findOne({
-      where: { id, is_delete: 0 },
-      relations: ['createUser', 'tags'],
-    });
+    const blog = await this.blogRepository
+      .createQueryBuilder('blog')
+      .leftJoinAndSelect('blog.tags', 'tags')
+      .where('blog.id = :id', { id })
+      .andWhere('blog.is_delete = 0')
+      .select([
+        'blog.id',
+        'blog.title',
+        'blog.description',
+        'blog.published',
+        'blog.content',
+        'tags.id',
+        'tags.name',
+      ])
+      .getOne();
     if (!blog) {
       throw new NotFoundException('博客不存在');
     }
-    return blog;
+    return {
+      code: 200,
+      message: '操作成功',
+      data: blog,
+    };
   }
 
-  async update(id: string, updateBlogDto: UpdateBlogDto) {
-    const { tagIds, ...blogData } = updateBlogDto;
+  async update(id: string, updateBlogDto: UpdateBlogDto) {}
 
-    const blog = await this.findOne(id);
-
-    // 更新博客基本信息
-    Object.assign(blog, blogData);
-
-    // 如果有标签 ID，更新标签关联
-    if (tagIds !== undefined) {
-      if (tagIds.length > 0) {
-        const tags = await this.tagRepository.find({
-          where: { id: In(tagIds) },
-        });
-        blog.tags = tags;
-      } else {
-        blog.tags = [];
-      }
-    }
-
-    return await this.blogRepository.save(blog);
-  }
-
-  async remove(id: string) {
-    const blog = await this.findOne(id);
-    blog.is_delete = 1;
-    await this.blogRepository.save(blog);
-  }
+  async remove(id: string) {}
 }
