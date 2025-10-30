@@ -6,6 +6,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
@@ -28,9 +29,13 @@ export class BlogController {
     return this.blogService.create(createBlogDto, user.id);
   }
 
-  @Get()
-  findAll() {
-    return this.blogService.findAll();
+  @Get('getBlogListByPage')
+  findByPage(
+    @Query('title') title: string,
+    @Query('pageNum') pageNum: number,
+    @Query('pageSize') pageSize: number,
+  ) {
+    return this.blogService.findByPage(title, pageNum, pageSize);
   }
 
   @Get('getBlogInfo/:id')
