@@ -112,6 +112,7 @@ export class BlogService {
         'blog.content',
         'tags.id',
         'tags.name',
+        'tags.icon',
       ])
       .getOne();
     if (!blog) {
