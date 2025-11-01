@@ -110,6 +110,8 @@ export class BlogService {
         'blog.description',
         'blog.published',
         'blog.content',
+        'blog.createTime',
+        'blog.updateTime',
         'tags.id',
         'tags.name',
         'tags.icon',
