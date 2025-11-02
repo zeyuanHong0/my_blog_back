@@ -7,6 +7,7 @@ import {
   Delete,
   UseGuards,
   Query,
+  Put,
 } from '@nestjs/common';
 
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
@@ -43,9 +44,9 @@ export class BlogController {
     return this.blogService.findOne(id);
   }
 
-  @Post('updateBlog')
-  update(@Param('id') id: string, @Body() updateBlogDto: UpdateBlogDto) {
-    return this.blogService.update(id, updateBlogDto);
+  @Put('updateBlog')
+  update(@Body() updateBlogDto: UpdateBlogDto) {
+    return this.blogService.update(updateBlogDto);
   }
 
   @Delete('deleteBlog/:id')

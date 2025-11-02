@@ -127,7 +127,31 @@ export class BlogService {
     };
   }
 
-  async update(id: string, updateBlogDto: UpdateBlogDto) {}
+  async update(updateBlogDto: UpdateBlogDto) {
+    const { id, tags: tagIds = [], ...blogData } = updateBlogDto;
+    const blog = await this.blogRepository.findOne({
+      where: { id, is_delete: 0 },
+      relations: ['tags'],
+    });
+    if (!blog) {
+      throw new NotFoundException('博客不存在');
+    }
+    // 查出新的标签集合
+    const newTags = await this.tagRepository.find({
+      where: { id: In(tagIds) },
+    });
+    if (newTags.length !== tagIds.length) {
+      throw new NotFoundException('部分标签不存在');
+    }
+    blog.tags = newTags;
+    // 更新其他字段
+    Object.assign(blog, blogData);
+    await this.blogRepository.save(blog);
+    return {
+      code: 200,
+      message: '博客更新成功',
+    };
+  }
 
   async remove(id: string) {}
 }
