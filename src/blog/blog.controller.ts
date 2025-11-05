@@ -49,6 +49,11 @@ export class BlogController {
     return this.blogService.update(updateBlogDto);
   }
 
+  @Post('changeBlogStatus/:id')
+  changeStatus(@Param('id') id: string, @Body('published') published: number) {
+    return this.blogService.changeStatus(id, published);
+  }
+
   @Delete('deleteBlog/:id')
   remove(@Param('id') id: string) {
     return this.blogService.remove(id);
