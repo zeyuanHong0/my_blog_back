@@ -39,6 +39,11 @@ export class BlogController {
     return this.blogService.findByPage(title, pageNum, pageSize);
   }
 
+  @Get('getAllBlogs')
+  findAll() {
+    return this.blogService.findAll();
+  }
+
   @Get('getBlogInfo/:id')
   findOne(@Param('id') id: string) {
     return this.blogService.findOne(id);

@@ -53,10 +53,28 @@ export class BlogService {
   }
 
   async findAll() {
-    return await this.blogRepository.find({
-      relations: ['createUser', 'tags'],
-      where: { is_delete: 0 },
-    });
+    const blogList = await this.blogRepository
+      .createQueryBuilder('blog')
+      .leftJoinAndSelect('blog.tags', 'tags')
+      .where('blog.is_delete = :isDelete', { isDelete: 0 })
+      .andWhere('blog.published = :published', { published: 1 })
+      .select([
+        'blog.id',
+        'blog.title',
+        'blog.description',
+        'blog.createTime',
+        'tags.id',
+        'tags.name',
+        'tags.icon',
+      ])
+      .orderBy('blog.createTime', 'DESC')
+      .getMany();
+
+    return {
+      code: 200,
+      msg: '操作成功',
+      data: blogList,
+    };
   }
 
   async findByPage(title: string, pageNum: number, pageSize: number) {
@@ -150,6 +168,21 @@ export class BlogService {
     return {
       code: 200,
       message: '博客更新成功',
+    };
+  }
+
+  async changeStatus(id: string, published: number) {
+    const blog = await this.blogRepository.findOne({
+      where: { id, is_delete: 0 },
+    });
+    if (!blog) {
+      throw new NotFoundException('博客不存在');
+    }
+    blog.published = published;
+    await this.blogRepository.save(blog);
+    return {
+      code: 200,
+      message: '博客状态更新成功',
     };
   }
 
