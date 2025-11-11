@@ -12,7 +12,11 @@ async function bootstrap() {
   app.useLogger(app.get(Logger)); //使用nestjs-pino作为日志记录器
   app.setGlobalPrefix('api'); //设置全局前缀为 'api'
   app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // 自动去除非 DTO 定义的属性
+    }),
+  );
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
