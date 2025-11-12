@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 
 import { BlogService } from './blog.service';
 
@@ -9,5 +9,10 @@ export class BlogFrontController {
   @Get('getAllBlogs')
   findAll() {
     return this.blogService.findAll();
+  }
+
+  @Get('getBlogInfo/:id')
+  findOne(@Param('id') id: string) {
+    return this.blogService.findOne(id);
   }
 }
