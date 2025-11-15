@@ -3,11 +3,12 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 
-import { ConfigEnum } from './src/enum/config.enum';
+import { ConfigEnum } from '@/enum/config.enum';
 
-import { User } from './src/user/entities/user.entity';
-import { Blog } from './src/blog/entities/blog.entity';
-import { Tag } from './src/tag/entities/tag.entity';
+import { User } from '@/user/entities/user.entity';
+import { Blog } from '@/blog/entities/blog.entity';
+import { Tag } from '@/tag/entities/tag.entity';
+import { File } from '@/upload/entities/upload.entity';
 
 // 通过环境变量读取不同的.env文件
 function getEnv(env: string): Record<string, any> {
@@ -16,6 +17,7 @@ function getEnv(env: string): Record<string, any> {
   }
   return {};
 }
+
 // 通过dotenv解析.env文件
 function buildConnectionOptions(): TypeOrmModuleOptions {
   const defaultConfig = getEnv('.env');
@@ -29,8 +31,8 @@ function buildConnectionOptions(): TypeOrmModuleOptions {
     username: env[ConfigEnum.DB_USERNAME],
     password: env[ConfigEnum.DB_PASSWORD],
     database: env[ConfigEnum.DB_NAME],
-    entities: [User, Blog, Tag],
-    synchronize: false, // 注意：在生产环境中不要使用 synchronize: true
+    entities: [User, Blog, Tag, File],
+    synchronize: true, // 注意：在生产环境中不要使用 synchronize: true
   };
 }
 
