@@ -44,7 +44,6 @@ export class AuthService {
     const payload = { username: user.username, id: user.id };
     const token = this.jwtService.sign(payload);
     return {
-      code: 200,
       msg: '登录成功',
       data: {
         token,

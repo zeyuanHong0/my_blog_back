@@ -47,7 +47,6 @@ export class BlogService {
     }
     await this.blogRepository.save(blog);
     return {
-      code: 200,
       message: '博客创建成功',
     };
   }
@@ -71,8 +70,6 @@ export class BlogService {
       .getMany();
 
     return {
-      code: 200,
-      msg: '操作成功',
       data: blogList,
     };
   }
@@ -105,8 +102,6 @@ export class BlogService {
     const [blogList, total] = await queryBuilder.getManyAndCount();
 
     return {
-      code: 200,
-      msg: '操作成功',
       data: {
         list: blogList,
         total,
@@ -139,8 +134,6 @@ export class BlogService {
       throw new NotFoundException('博客不存在');
     }
     return {
-      code: 200,
-      message: '操作成功',
       data: blog,
     };
   }
@@ -166,7 +159,6 @@ export class BlogService {
     Object.assign(blog, blogData);
     await this.blogRepository.save(blog);
     return {
-      code: 200,
       message: '博客更新成功',
     };
   }
@@ -181,7 +173,6 @@ export class BlogService {
     blog.published = published;
     await this.blogRepository.save(blog);
     return {
-      code: 200,
       message: '博客状态更新成功',
     };
   }

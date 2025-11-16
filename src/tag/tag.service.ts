@@ -15,10 +15,6 @@ export class TagService {
 
   async create(createTagDto: CreateTagDto) {
     await this.tagRepository.save(createTagDto);
-    return {
-      code: 200,
-      msg: '操作成功',
-    };
   }
 
   async findAll() {
@@ -29,8 +25,6 @@ export class TagService {
       select: ['id', 'name'],
     });
     return {
-      code: 200,
-      msg: '操作成功',
       data: tagList,
     };
   }
@@ -46,8 +40,6 @@ export class TagService {
       },
     });
     return {
-      code: 200,
-      msg: '操作成功',
       data: {
         list: tagList,
         total,
@@ -63,8 +55,6 @@ export class TagService {
       select: ['id', 'name', 'icon', 'createTime', 'updateTime'],
     });
     return {
-      code: 200,
-      msg: '操作成功',
       data: tag,
     };
   }
@@ -72,17 +62,9 @@ export class TagService {
   async update(updateTagDto: UpdateTagDto) {
     const { id, ...rest } = updateTagDto;
     await this.tagRepository.update(id, rest);
-    return {
-      code: 200,
-      msg: '操作成功',
-    };
   }
 
   async remove(id: string) {
     await this.tagRepository.update(id, { is_delete: 1 });
-    return {
-      code: 200,
-      msg: '操作成功',
-    };
   }
 }
