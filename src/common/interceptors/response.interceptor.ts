@@ -23,14 +23,14 @@ export class ResponseInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       map((responseData) => {
-        const { data, msg, code } =
+        const { data, message, code } =
           responseData && typeof responseData === 'object'
             ? responseData
             : { data: responseData };
 
         return {
           code: code ?? 200,
-          msg: msg ?? defaultMsgMap[method] ?? '操作成功',
+          message: message ?? defaultMsgMap[method] ?? '操作成功',
           data,
         };
       }),
