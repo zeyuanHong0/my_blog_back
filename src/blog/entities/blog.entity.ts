@@ -9,10 +9,6 @@ import {
   JoinTable,
   JoinColumn,
 } from 'typeorm';
-import {
-  FormattedCreateDateColumn,
-  FormattedUpdateDateColumn,
-} from '@/common/decorators/formatted-date-column.decorator';
 
 import { User } from '@/user/entities/user.entity';
 import { Tag } from '@/tag/entities/tag.entity';
@@ -46,10 +42,10 @@ export class Blog {
   })
   tags: Tag[];
 
-  @FormattedCreateDateColumn()
+  @CreateDateColumn({ type: 'datetime' })
   createTime: Date;
 
-  @FormattedUpdateDateColumn()
+  @UpdateDateColumn({ type: 'datetime' })
   updateTime: Date;
 
   @Column({ type: 'tinyint', default: 0 })
