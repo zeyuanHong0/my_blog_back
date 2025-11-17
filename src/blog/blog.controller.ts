@@ -8,11 +8,13 @@ import {
   UseGuards,
   Query,
   Put,
+  UseInterceptors,
 } from '@nestjs/common';
 
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { type JwtPayload } from '@/auth/types/jwt-payload.type';
+import { FormattedDateInterceptor } from '@/common/interceptors/formatted-date.interceptor';
 import { BlogService } from './blog.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
@@ -31,6 +33,7 @@ export class BlogController {
   }
 
   @Get('getBlogListByPage')
+  @UseInterceptors(FormattedDateInterceptor)
   findByPage(
     @Query('title') title: string,
     @Query('pageNum') pageNum: number,
@@ -40,11 +43,13 @@ export class BlogController {
   }
 
   @Get('getAllBlogs')
+  @UseInterceptors(FormattedDateInterceptor)
   findAll() {
     return this.blogService.findAll();
   }
 
   @Get('getBlogInfo/:id')
+  @UseInterceptors(FormattedDateInterceptor)
   findOne(@Param('id') id: string) {
     return this.blogService.findOne(id);
   }
