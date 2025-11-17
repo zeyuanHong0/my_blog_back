@@ -4,7 +4,6 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
 } from 'typeorm';
-import { FormattedCreateDateColumn } from '@/common/decorators/formatted-date-column.decorator';
 
 @Entity('files')
 export class File {
@@ -23,7 +22,7 @@ export class File {
   @Column()
   size: number;
 
-  @FormattedCreateDateColumn()
+  @CreateDateColumn({ type: 'datetime' })
   createTime: Date;
 
   @Column({ nullable: true })

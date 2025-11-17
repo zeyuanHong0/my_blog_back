@@ -6,10 +6,6 @@ import {
   UpdateDateColumn,
   ManyToMany,
 } from 'typeorm';
-import {
-  FormattedCreateDateColumn,
-  FormattedUpdateDateColumn,
-} from '@/common/decorators/formatted-date-column.decorator';
 import { Blog } from '@/blog/entities/blog.entity';
 
 @Entity('tags')
@@ -23,10 +19,10 @@ export class Tag {
   @Column({ type: 'text' })
   icon: string;
 
-  @FormattedCreateDateColumn()
+  @CreateDateColumn({ type: 'datetime' })
   createTime: Date;
 
-  @FormattedUpdateDateColumn()
+  @UpdateDateColumn({ type: 'datetime' })
   updateTime: Date;
 
   @Column({ type: 'tinyint', default: 0 })

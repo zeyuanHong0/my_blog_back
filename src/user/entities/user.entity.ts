@@ -1,8 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import {
-  FormattedCreateDateColumn,
-  FormattedUpdateDateColumn,
-} from '@/common/decorators/formatted-date-column.decorator';
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 import { Blog } from '@/blog/entities/blog.entity';
 
@@ -23,10 +26,10 @@ export class User {
   @Column({ default: 'test' })
   accountType: string;
 
-  @FormattedCreateDateColumn()
+  @CreateDateColumn({ type: 'datetime' })
   createTime: Date;
 
-  @FormattedUpdateDateColumn()
+  @UpdateDateColumn({ type: 'datetime' })
   updateTime: Date;
 
   @Column({ type: 'tinyint', default: 0 })
