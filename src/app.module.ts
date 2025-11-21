@@ -18,6 +18,7 @@ import { AuthModule } from './auth/auth.module';
 import { BlogModule } from './blog/blog.module';
 import { TagModule } from './tag/tag.module';
 import { UploadModule } from './upload/upload.module';
+import { TagFrontController } from './tag.front/tag.front.controller';
 
 // console.log('NODE_ENV:', process.env.NODE_ENV);
 const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
@@ -77,7 +78,7 @@ const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
     TagModule,
     UploadModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, TagFrontController],
   providers: [AppService],
 })
 export class AppModule {}
