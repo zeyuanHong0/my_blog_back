@@ -29,6 +29,19 @@ export class TagService {
     };
   }
 
+  async getAllTags() {
+    const tagList = await this.tagRepository
+      .createQueryBuilder('tag')
+      .leftJoin('tag.blogs', 'blogs')
+      .where('tag.is_delete = :is_delete', { is_delete: 0 })
+      .select(['tag.id', 'tag.name', 'tag.icon'])
+      .loadRelationCountAndMap('tag.blogCount', 'tag.blogs')
+      .getMany();
+    return {
+      data: tagList,
+    };
+  }
+
   async findByPage(name: string, pageNum: number, pageSize: number) {
     const [tagList, total] = await this.tagRepository.findAndCount({
       where: { is_delete: 0, name: name ? Like(`%${name}%`) : undefined },
