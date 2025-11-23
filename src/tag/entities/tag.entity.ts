@@ -16,8 +16,8 @@ export class Tag {
   @Column({ unique: true })
   name: string;
 
-  @Column({ type: 'text' })
-  icon: string;
+  @Column({ type: 'text', nullable: true })
+  icon?: string;
 
   @CreateDateColumn({ type: 'datetime' })
   createTime: Date;
