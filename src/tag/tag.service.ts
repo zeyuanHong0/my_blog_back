@@ -79,6 +79,7 @@ export class TagService {
     const tagInfo = await this.tagRepository
       .createQueryBuilder('tag')
       .leftJoinAndSelect('tag.blogs', 'blogs')
+      .leftJoinAndSelect('blogs.tags', 'blog_tags')
       .where('tag.id = :id', { id })
       .andWhere('blogs.is_delete = :is_delete', { is_delete: 0 })
       .select([
@@ -89,22 +90,12 @@ export class TagService {
         'blogs.description',
         'blogs.createTime',
         'blogs.updateTime',
+        'blog_tags.id',
+        'blog_tags.icon',
+        'blog_tags.name',
       ])
       .getOne();
-    if (tagInfo && tagInfo.blogs && tagInfo.blogs.length > 0) {
-      const newBlogs = tagInfo.blogs.map(async (item) => {
-        const blog = await this.blogRepository.findOne({
-          where: { id: item.id },
-          relations: ['tags'],
-        });
-        console.log('const blog = await this.blogRepository.findOne', blog);
-        return {
-          ...item,
-          tags: blog?.tags ?? [],
-        };
-      });
-      tagInfo.blogs = await Promise.all(newBlogs);
-    }
+
     return {
       data: tagInfo,
     };
