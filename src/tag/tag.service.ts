@@ -78,10 +78,11 @@ export class TagService {
   async getTagInfo(id: string) {
     const tagInfo = await this.tagRepository
       .createQueryBuilder('tag')
-      .leftJoinAndSelect('tag.blogs', 'blogs')
+      .leftJoinAndSelect('tag.blogs', 'blogs', 'blogs.is_delete = :is_delete', {
+        is_delete: 0,
+      })
       .leftJoinAndSelect('blogs.tags', 'blog_tags')
       .where('tag.id = :id', { id })
-      .andWhere('blogs.is_delete = :is_delete', { is_delete: 0 })
       .select([
         'tag.id',
         'tag.name',
