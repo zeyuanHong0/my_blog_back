@@ -1,6 +1,7 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param, UseInterceptors } from '@nestjs/common';
 
 import { TagService } from '@/tag/tag.service';
+import { FormattedDateInterceptor } from '@/common/interceptors/formatted-date.interceptor';
 
 @Controller('front/tag')
 export class TagFrontController {
@@ -10,5 +11,11 @@ export class TagFrontController {
   @Get('getAllTags')
   findAll() {
     return this.tagService.getAllTags();
+  }
+
+  @Get('getTagInfo/:id')
+  @UseInterceptors(FormattedDateInterceptor)
+  getTagInfo(@Param('id') id: string) {
+    return this.tagService.getTagInfo(id);
   }
 }

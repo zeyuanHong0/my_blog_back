@@ -5,12 +5,15 @@ import { Repository, Like } from 'typeorm';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { Tag } from './entities/tag.entity';
+import { Blog } from '@/blog/entities/blog.entity';
 
 @Injectable()
 export class TagService {
   constructor(
     @InjectRepository(Tag)
     private readonly tagRepository: Repository<Tag>,
+    @InjectRepository(Blog)
+    private readonly blogRepository: Repository<Blog>,
   ) {}
 
   async create(createTagDto: CreateTagDto) {
@@ -69,6 +72,41 @@ export class TagService {
     });
     return {
       data: tag,
+    };
+  }
+
+  async getTagInfo(id: string) {
+    const tagInfo = await this.tagRepository
+      .createQueryBuilder('tag')
+      .leftJoinAndSelect('tag.blogs', 'blogs')
+      .where('tag.id = :id', { id })
+      .andWhere('blogs.is_delete = :is_delete', { is_delete: 0 })
+      .select([
+        'tag.id',
+        'tag.name',
+        'blogs.id',
+        'blogs.title',
+        'blogs.description',
+        'blogs.createTime',
+        'blogs.updateTime',
+      ])
+      .getOne();
+    if (tagInfo && tagInfo.blogs && tagInfo.blogs.length > 0) {
+      const newBlogs = tagInfo.blogs.map(async (item) => {
+        const blog = await this.blogRepository.findOne({
+          where: { id: item.id },
+          relations: ['tags'],
+        });
+        console.log('const blog = await this.blogRepository.findOne', blog);
+        return {
+          ...item,
+          tags: blog?.tags ?? [],
+        };
+      });
+      tagInfo.blogs = await Promise.all(newBlogs);
+    }
+    return {
+      data: tagInfo,
     };
   }
 
