@@ -6,28 +6,45 @@ import { ConfigEnum } from '@/enum/config.enum';
 
 @Injectable()
 export class CosService {
-  private cos: COS;
-  private readonly bucket: string;
-  private readonly region: string;
-  constructor(private readonly configService: ConfigService) {
+  private cos: COS | null = null;
+  private bucket: string | null = null;
+  private region: string | null = null;
+
+  constructor(private readonly configService: ConfigService) {}
+
+  private initializeCos() {
+    if (this.cos) return; // 已初始化则直接返回
+
+    const secretId = this.configService.get<string>(ConfigEnum.COS_SECRET_ID);
+    const secretKey = this.configService.get<string>(ConfigEnum.COS_SECRET_KEY);
+    const bucket = this.configService.get<string>(ConfigEnum.COS_BUCKET);
+    const region = this.configService.get<string>(ConfigEnum.COS_REGION);
+
+    if (!secretId || !secretKey || !bucket || !region) {
+      throw new Error(
+        'COS configuration is incomplete. Please check environment variables: COS_SECRET_ID, COS_SECRET_KEY, COS_BUCKET, COS_REGION',
+      );
+    }
+
     this.cos = new COS({
-      SecretId: this.configService.get<string>(ConfigEnum.COS_SECRET_ID),
-      SecretKey: this.configService.get<string>(ConfigEnum.COS_SECRET_KEY),
+      SecretId: secretId,
+      SecretKey: secretKey,
     });
-    this.bucket = this.configService.get<string>(ConfigEnum.COS_BUCKET);
-    this.region = this.configService.get<string>(ConfigEnum.COS_REGION);
+    this.bucket = bucket;
+    this.region = region;
   }
 
-  async uploadFile(key: string, file: Buffer | string) {
+  async uploadFileToCOS(key: string, file: Buffer | string) {
+    this.initializeCos();
     return new Promise((resolve, reject) => {
-      this.cos.putObject(
+      this.cos!.putObject(
         {
-          Bucket: this.bucket,
-          Region: this.region,
+          Bucket: this.bucket!,
+          Region: this.region!,
           Key: key,
           Body: file,
         },
-        (err, data) => {
+        (err: unknown, data) => {
           if (err)
             return reject(
               err instanceof Error ? err : new Error(JSON.stringify(err)),
@@ -39,6 +56,7 @@ export class CosService {
   }
 
   getPublicUrl(key: string) {
+    this.initializeCos();
     return `https://${this.bucket}.cos.${this.region}.myqcloud.com/${key}`;
   }
 }
