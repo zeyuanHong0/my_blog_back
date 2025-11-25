@@ -17,6 +17,7 @@ import { AuthModule } from './auth/auth.module';
 import { BlogModule } from './blog/blog.module';
 import { TagModule } from './tag/tag.module';
 import { UploadModule } from './upload/upload.module';
+import { CosModule } from './cos/cos.module';
 
 // console.log('NODE_ENV:', process.env.NODE_ENV);
 const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
@@ -75,6 +76,7 @@ const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
     BlogModule,
     TagModule,
     UploadModule,
+    CosModule,
   ],
   controllers: [AppController],
   providers: [AppService],
