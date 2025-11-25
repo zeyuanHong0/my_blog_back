@@ -11,7 +11,11 @@ export class UploadService {
     private readonly fileRepository: Repository<File>,
   ) {}
 
-  async saveFileRecord(file: Express.Multer.File) {
+  async saveFileRecord(
+    file: Express.Multer.File,
+    storageType: 'local' | 'cos',
+    fileUrl?: string,
+  ) {
     const { originalname, filename, mimetype, size } = file;
     const fileRecord = this.fileRepository.create({
       originalName: originalname,

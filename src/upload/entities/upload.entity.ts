@@ -22,6 +22,16 @@ export class File {
   @Column()
   size: number;
 
+  @Column({
+    type: 'enum',
+    enum: ['local', 'cos'],
+    default: 'local',
+  })
+  storageType: 'local' | 'cos'; // 存储类型
+
+  @Column({ nullable: true })
+  fileUrl?: string; // COS 存储时记录完整 URL，本地存储时为空
+
   @CreateDateColumn({ type: 'datetime' })
   createTime: Date;
 

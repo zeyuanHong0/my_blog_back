@@ -10,11 +10,16 @@ import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import type { Request } from 'express';
 
+import { getFileName } from '@/utils';
 import { UploadService } from './upload.service';
+import { CosService } from '@/cos/cos.service';
 
 @Controller('upload')
 export class UploadController {
-  constructor(private readonly uploadService: UploadService) {}
+  constructor(
+    private readonly uploadService: UploadService,
+    private readonly cosService: CosService,
+  ) {}
 
   @Post('file')
   @UseInterceptors(
@@ -22,10 +27,7 @@ export class UploadController {
       storage: diskStorage({
         destination: join(process.cwd(), 'files'), // 存储目录
         filename: (req, file, callback) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
-          const ext = extname(file.originalname);
-          callback(null, `${uniqueSuffix}${ext}`);
+          callback(null, getFileName(file));
         },
       }),
       limits: { fileSize: 5 * 1024 * 1024 }, // 限制 5MB
@@ -36,7 +38,7 @@ export class UploadController {
     @Req() req: Request,
   ) {
     console.log('uploadFile', file);
-    const fileRecord = await this.uploadService.saveFileRecord(file);
+    const fileRecord = await this.uploadService.saveFileRecord(file, 'local');
     const host = `${req.protocol}://${req.get('host')}`;
     const data = {
       fileUrl: `${host}/files/${file.filename}`,
@@ -45,6 +47,39 @@ export class UploadController {
     return {
       message: '上传成功',
       data,
+    };
+  }
+
+  /**
+   * 上传文件到腾讯云 COS
+   */
+  @Post('fileToCos')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        filename: (req, file, callback) => {
+          callback(null, getFileName(file));
+        },
+      }),
+      limits: { fileSize: 50 * 1024 * 1024 }, // 限制 50MB
+    }),
+  )
+  async uploadFileToCos(@UploadedFile() file: Express.Multer.File) {
+    console.log('uploadFileToCos', file);
+    const key = `uploads/${Date.now()}-${file.originalname}`;
+    await this.cosService.uploadFileToCOS(key, file.buffer);
+    const fileUrl = this.cosService.getPublicUrl(key);
+    const fileRecord = await this.uploadService.saveFileRecord(
+      file,
+      'cos',
+      fileUrl,
+    );
+    return {
+      message: '上传成功',
+      data: {
+        fileUrl,
+        ...fileRecord,
+      },
     };
   }
 }
