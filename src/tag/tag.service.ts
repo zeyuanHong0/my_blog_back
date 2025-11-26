@@ -38,7 +38,11 @@ export class TagService {
       .leftJoin('tag.blogs', 'blogs')
       .where('tag.is_delete = :is_delete', { is_delete: 0 })
       .select(['tag.id', 'tag.name', 'tag.icon'])
-      .loadRelationCountAndMap('tag.blogCount', 'tag.blogs')
+      .loadRelationCountAndMap('tag.blogCount', 'tag.blogs', 'blog', (qb) =>
+        qb
+          .where('blog.is_delete = :blog_is_delete', { blog_is_delete: 0 })
+          .andWhere('blog.published = :published', { published: 1 }),
+      )
       .getMany();
     return {
       data: tagList,
@@ -78,10 +82,23 @@ export class TagService {
   async getTagInfo(id: string) {
     const tagInfo = await this.tagRepository
       .createQueryBuilder('tag')
-      .leftJoinAndSelect('tag.blogs', 'blogs', 'blogs.is_delete = :is_delete', {
-        is_delete: 0,
-      })
-      .leftJoinAndSelect('blogs.tags', 'blog_tags')
+      .leftJoinAndSelect(
+        'tag.blogs',
+        'blogs',
+        'blogs.is_delete = :is_delete AND blogs.published = :published',
+        {
+          is_delete: 0,
+          published: 1,
+        },
+      )
+      .leftJoinAndSelect(
+        'blogs.tags',
+        'blog_tags',
+        'blog_tags.is_delete = :is_delete',
+        {
+          is_delete: 0,
+        },
+      )
       .where('tag.id = :id', { id })
       .select([
         'tag.id',
