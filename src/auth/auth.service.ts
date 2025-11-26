@@ -4,8 +4,11 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
-import { UserService } from '../../src/user/user.service';
+import type { Response } from 'express';
+
+import { UserService } from '@/user/user.service';
 import { SignupUserDto } from './dto/signup-user.dto';
 import { SigninUserDto } from './dto/signin-user.dto';
 
@@ -14,6 +17,7 @@ export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   // 验证用户
@@ -34,7 +38,7 @@ export class AuthService {
     return result;
   }
 
-  async signin(data: SigninUserDto) {
+  async signin(data: SigninUserDto, res: Response) {
     const { username, password } = data;
     const user = await this.validateUser(username, password);
     if (!user) {
@@ -43,6 +47,18 @@ export class AuthService {
     // 生成 JWT token
     const payload = { username: user.username, id: user.id };
     const token = this.jwtService.sign(payload);
+
+    // 判断是否为生产环境
+    const isProduction = this.configService.get('NODE_ENV') === 'production';
+
+    // 设置 cookie
+    res.cookie('token', token, {
+      httpOnly: true, // 防止 XSS 攻击
+      secure: isProduction, // 生产环境使用 HTTPS
+      sameSite: 'strict', // 防止 CSRF 攻击
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7天
+    });
+
     return {
       msg: '登录成功',
       data: {
@@ -69,5 +85,17 @@ export class AuthService {
       email,
     });
     return res;
+  }
+
+  signout(res: Response) {
+    // 清除 cookie
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
+      sameSite: 'strict',
+    });
+    return {
+      msg: '登出成功',
+    };
   }
 }

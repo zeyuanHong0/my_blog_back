@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
+import cookieParser from 'cookie-parser';
 
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './filters/all-exceptions.filter';
@@ -11,6 +12,7 @@ async function bootstrap() {
     bufferLogs: true,
   });
   app.useLogger(app.get(Logger)); //使用nestjs-pino作为日志记录器
+  app.use(cookieParser()); // 启用 cookie-parser
   app.setGlobalPrefix('api'); //设置全局前缀为 'api'
   app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));
   app.useGlobalInterceptors(new ResponseInterceptor());

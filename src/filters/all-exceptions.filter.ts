@@ -4,8 +4,9 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { Response, Request } from 'express';
+import type { Response, Request } from 'express';
 import { PinoLogger } from 'nestjs-pino';
 import { QueryFailedError } from 'typeorm';
 
@@ -21,7 +22,32 @@ export class AllExceptionsFilter implements ExceptionFilter {
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Internal server error';
 
-    if (exception instanceof HttpException) {
+    // 处理 token 过期或无效
+    if (exception instanceof UnauthorizedException) {
+      status = HttpStatus.UNAUTHORIZED;
+      const res = exception.getResponse();
+      if (typeof res === 'string') {
+        message = res;
+      } else if (typeof res === 'object' && res !== null) {
+        const r = res as Record<string, unknown>;
+        message = (r.message as string) || '身份验证失败';
+      }
+
+      // 清除无效的 cookie
+      response.clearCookie('token', {
+        httpOnly: true,
+        sameSite: 'strict',
+      });
+
+      this.logger.warn(
+        {
+          url: request.url,
+          method: request.method,
+          message,
+        },
+        'Unauthorized access attempt',
+      );
+    } else if (exception instanceof HttpException) {
       status = exception.getStatus();
       const res = exception.getResponse();
       if (typeof res === 'string') {
