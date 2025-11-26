@@ -38,12 +38,12 @@ export class UploadController {
     @Req() req: Request,
   ) {
     console.log('uploadFile', file);
-    const { id } = await this.uploadService.saveFileRecord(file, 'local');
+    const { filename } = await this.uploadService.saveFileRecord(file, 'local');
     const host = `${req.protocol}://${req.get('host')}`;
     return {
       message: '上传成功',
       data: {
-        id,
+        filename,
         fileUrl: `${host}/files/${file.filename}`,
       },
     };
@@ -63,19 +63,15 @@ export class UploadController {
     console.log('uploadFileToCos', file);
     // 使用 memoryStorage 时需要手动生成 filename
     const filename = getFileName(file);
+    file.filename = filename;
     const key = `uploads/${filename}`;
     await this.cosService.uploadFileToCOS(key, file.buffer);
     const fileUrl = this.cosService.getPublicUrl(key);
-    file.filename = filename;
-    const { id } = await this.uploadService.saveFileRecord(
-      file,
-      'cos',
-      fileUrl,
-    );
+    await this.uploadService.saveFileRecord(file, 'cos', fileUrl);
     return {
       message: '上传成功',
       data: {
-        id,
+        filename,
         fileUrl,
       },
     };
