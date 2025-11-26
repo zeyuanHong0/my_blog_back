@@ -22,6 +22,8 @@ export class UploadService {
       filename,
       mimetype,
       size,
+      storageType,
+      fileUrl,
     });
     const res = await this.fileRepository.save(fileRecord);
     console.log('saveFileRecord', res);

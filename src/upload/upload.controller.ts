@@ -6,7 +6,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { diskStorage, memoryStorage } from 'multer';
 import { extname, join } from 'path';
 import type { Request } from 'express';
 
@@ -38,15 +38,14 @@ export class UploadController {
     @Req() req: Request,
   ) {
     console.log('uploadFile', file);
-    const fileRecord = await this.uploadService.saveFileRecord(file, 'local');
+    const { id } = await this.uploadService.saveFileRecord(file, 'local');
     const host = `${req.protocol}://${req.get('host')}`;
-    const data = {
-      fileUrl: `${host}/files/${file.filename}`,
-      ...fileRecord,
-    };
     return {
       message: '上传成功',
-      data,
+      data: {
+        id,
+        fileUrl: `${host}/files/${file.filename}`,
+      },
     };
   }
 
@@ -56,20 +55,19 @@ export class UploadController {
   @Post('fileToCos')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        filename: (req, file, callback) => {
-          callback(null, getFileName(file));
-        },
-      }),
+      storage: memoryStorage(), // 使用内存存储以获取 buffer
       limits: { fileSize: 50 * 1024 * 1024 }, // 限制 50MB
     }),
   )
   async uploadFileToCos(@UploadedFile() file: Express.Multer.File) {
     console.log('uploadFileToCos', file);
-    const key = `uploads/${Date.now()}-${file.originalname}`;
+    // 使用 memoryStorage 时需要手动生成 filename
+    const filename = getFileName(file);
+    const key = `uploads/${filename}`;
     await this.cosService.uploadFileToCOS(key, file.buffer);
     const fileUrl = this.cosService.getPublicUrl(key);
-    const fileRecord = await this.uploadService.saveFileRecord(
+    file.filename = filename;
+    const { id } = await this.uploadService.saveFileRecord(
       file,
       'cos',
       fileUrl,
@@ -77,8 +75,8 @@ export class UploadController {
     return {
       message: '上传成功',
       data: {
+        id,
         fileUrl,
-        ...fileRecord,
       },
     };
   }
