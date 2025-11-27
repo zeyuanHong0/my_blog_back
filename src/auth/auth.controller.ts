@@ -19,9 +19,12 @@ export class AuthController {
   }
 
   @Post('/signup')
-  async register(@Body() body: SignupUserDto) {
+  async register(
+    @Body() body: SignupUserDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     // 注册
-    return this.authService.signup(body);
+    return this.authService.signup(body, res);
   }
 
   @Post('/signout')

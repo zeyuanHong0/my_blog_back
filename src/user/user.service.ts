@@ -16,11 +16,8 @@ export class UserService {
     const { username, password, email } = createUserDto;
     // 保存用户
     const user = this.userRepository.create({ username, password, email });
-    await this.userRepository.save(user);
-    return {
-      code: 200,
-      msg: '操作成功',
-    };
+    const savedUser = await this.userRepository.save(user);
+    return savedUser;
   }
 
   async findAll(username?: string) {
@@ -30,8 +27,6 @@ export class UserService {
       },
     });
     return {
-      code: 200,
-      msg: '操作成功',
       data: users,
     };
   }
@@ -44,8 +39,6 @@ export class UserService {
       select: ['id', 'username', 'email', 'accountType'],
     });
     return {
-      code: 200,
-      msg: '操作成功',
       data: {
         userInfo: user,
       },
@@ -62,6 +55,16 @@ export class UserService {
     return user;
   }
 
+  async findUserByEmail(email: string) {
+    const user = await this.userRepository.findOne({
+      where: {
+        email,
+      },
+      select: ['id', 'username', 'password'],
+    });
+    return user;
+  }
+
   async getUserInfoById(id: string) {
     const user = await this.userRepository.findOne({
       where: {
@@ -71,41 +74,11 @@ export class UserService {
       relations: ['profile'],
     });
     return {
-      code: 200,
-      msg: '操作成功',
       data: user,
     };
   }
 
   async delete(id: string) {
     await this.userRepository.update(id, { is_delete: 1 });
-    return {
-      code: 200,
-      msg: '操作成功',
-    };
   }
-
-  // async getUserLogs(id: string) {
-  //   return await this.userRepository.findOne({
-  //     where: {
-  //       id,
-  //     },
-  //     relations: ['logs'],
-  //   });
-  // }
-
-  // async getAllLogs() {
-  //   return await this.logsRepository.find({ relations: ['user'] });
-  // }
-
-  // async getLogsCountGroupByResult(): Promise<
-  //   { result: string; count: number }[]
-  // > {
-  //   return await this.logsRepository
-  //     .createQueryBuilder('logs')
-  //     .select('logs.result', 'result')
-  //     .addSelect('COUNT(*)', 'count')
-  //     .groupBy('logs.result')
-  //     .getRawMany();
-  // }
 }

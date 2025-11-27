@@ -67,7 +67,7 @@ export class AuthService {
     };
   }
 
-  async signup(data: SignupUserDto) {
+  async signup(data: SignupUserDto, res: Response) {
     const { username, password, email } = data;
 
     // 检查用户是否已存在
@@ -76,15 +76,39 @@ export class AuthService {
       throw new ConflictException('用户名已存在');
     }
 
+    // 检查邮箱是否已存在
+    const existingEmail = await this.userService.findUserByEmail(email);
+    if (existingEmail) {
+      throw new ConflictException('邮箱已存在');
+    }
+
     // 加密密码
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     const hashedPassword = await bcrypt.hash(password, 10);
-    const res = await this.userService.create({
+    const newUser = await this.userService.create({
       username,
       password: hashedPassword,
       email,
     });
-    return res;
+
+    // 注册成功后自动登录,生成 JWT token
+    const payload = { username: newUser.username, id: newUser.id };
+    const token = this.jwtService.sign(payload);
+
+    // 判断是否为生产环境
+    const isProduction = this.configService.get('NODE_ENV') === 'production';
+
+    // 设置 cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    return {
+      msg: '注册成功',
+    };
   }
 
   signout(res: Response) {
