@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { MailerModule } from '@nestjs-modules/mailer';
 
 import { ConfigEnum } from '@/enum/config.enum';
 import { UserModule } from '@/user/user.module';
@@ -9,6 +11,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { LocalStrategy } from './local.strategy';
 import { JwtStrategy } from './jwt.strategy';
+import { EmailCode } from './entities/email-code.entity';
 
 @Module({
   imports: [
@@ -24,6 +27,8 @@ import { JwtStrategy } from './jwt.strategy';
       },
       inject: [ConfigService],
     }),
+    TypeOrmModule.forFeature([EmailCode]),
+    MailerModule, // 邮件模块
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, JwtStrategy],
