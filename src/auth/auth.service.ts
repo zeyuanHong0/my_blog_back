@@ -56,7 +56,7 @@ export class AuthService {
       httpOnly: true, // 防止 XSS 攻击
       secure: isProduction, // 生产环境使用 HTTPS
       sameSite: 'strict', // 防止 CSRF 攻击
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7天
+      maxAge: 24 * 60 * 60 * 1000, // 1天
     });
 
     return {
