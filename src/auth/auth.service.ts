@@ -1,7 +1,8 @@
 import {
   Injectable,
-  UnauthorizedException,
   ConflictException,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -42,7 +43,7 @@ export class AuthService {
     const { username, password } = data;
     const user = await this.validateUser(username, password);
     if (!user) {
-      throw new UnauthorizedException('用户名或密码错误');
+      throw new HttpException('用户名或密码错误', HttpStatus.BAD_REQUEST);
     }
     // 生成 JWT token
     const payload = { username: user.username, id: user.id };
