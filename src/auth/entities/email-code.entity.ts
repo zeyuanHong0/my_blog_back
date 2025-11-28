@@ -17,11 +17,11 @@ export class EmailCode {
   code: string;
 
   @Column()
-  expiresAt: Date;
+  expiresTime: Date;
 
   @Column({ default: false })
   used: boolean;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdTime: Date;
 }

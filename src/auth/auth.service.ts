@@ -1,25 +1,108 @@
 import {
   Injectable,
   ConflictException,
+  BadRequestException,
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { MailerService } from '@nestjs-modules/mailer';
 import type { Response } from 'express';
 
 import { UserService } from '@/user/user.service';
 import { SignupUserDto } from './dto/signup-user.dto';
 import { SigninUserDto } from './dto/signin-user.dto';
+import { EmailCode } from '@/auth/entities/email-code.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @InjectRepository(EmailCode)
+    private emailCodeRepository: Repository<EmailCode>,
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly mailerService: MailerService,
   ) {}
+
+  // 生成 6 位验证码
+  private generateCode() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  // 发送验证码
+  async sendCode(email: string) {
+    // 校验邮箱格式
+    const reg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!reg.test(email)) {
+      throw new BadRequestException('邮箱格式不正确');
+    }
+
+    const last = await this.emailCodeRepository.findOne({
+      where: { email },
+      order: { createdTime: 'DESC' },
+    });
+
+    if (last && Date.now() - last.createdTime.getTime() < 60 * 1000) {
+      throw new BadRequestException('发送过于频繁，请稍后再试');
+    }
+
+    // 生成验证码
+    const code = this.generateCode();
+    const hashed = await bcrypt.hash(code, 10);
+
+    await this.emailCodeRepository.save({
+      email,
+      code: hashed,
+      expiresTime: new Date(Date.now() + 5 * 60 * 1000), // 5 分钟有效
+    });
+
+    // 发送邮件
+    await this.mailerService.sendMail({
+      to: email,
+      subject: '您的博客验证码',
+      html: `
+        <p>你的验证码是：</p>
+        <h2 style="font-size: 30px">${code}</h2>
+        <p>5 分钟内有效，请勿泄露。</p>
+      `,
+    });
+
+    return {
+      message: '验证码发送成功',
+    };
+  }
+
+  // 校验验证码
+  async verifyCode(email: string, code: string) {
+    const record = await this.emailCodeRepository.findOne({
+      where: { email, used: false },
+      order: { createdTime: 'DESC' },
+    });
+
+    if (!record) {
+      throw new BadRequestException('请先发送验证码');
+    }
+
+    if (record.expiresTime < new Date()) {
+      throw new BadRequestException('验证码已过期');
+    }
+
+    const ok = await bcrypt.compare(code, record.code);
+    if (!ok) {
+      throw new BadRequestException('验证码错误');
+    }
+
+    // 标记已使用
+    record.used = true;
+    await this.emailCodeRepository.save(record);
+
+    return true;
+  }
 
   // 验证用户
   async validateUser(username: string, password: string) {
@@ -28,7 +111,6 @@ export class AuthService {
       return null;
     }
     // 验证密码
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return null;
@@ -61,7 +143,7 @@ export class AuthService {
     });
 
     return {
-      msg: '登录成功',
+      message: '登录成功',
       data: {
         token,
       },
@@ -69,7 +151,7 @@ export class AuthService {
   }
 
   async signup(data: SignupUserDto, res: Response) {
-    const { username, password, email } = data;
+    const { username, password, email, emailCode } = data;
 
     // 检查用户是否已存在
     const existingUser = await this.userService.findOne(username);
@@ -83,8 +165,10 @@ export class AuthService {
       throw new ConflictException('邮箱已存在');
     }
 
+    // 校验邮箱验证码
+    await this.verifyCode(email, emailCode);
+
     // 加密密码
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await this.userService.create({
       username,
@@ -108,7 +192,7 @@ export class AuthService {
     });
 
     return {
-      msg: '注册成功',
+      message: '注册成功',
     };
   }
 

@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import * as dotenv from 'dotenv';
 import * as Joi from 'joi';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerModule } from 'nestjs-pino';
+import { MailerModule } from '@nestjs-modules/mailer';
 import { join } from 'path';
 
 import { AppController } from './app.controller';
@@ -26,7 +27,7 @@ const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: [envFilePath],
+      envFilePath: ['.env', envFilePath],
       load: [
         () => {
           const result = dotenv.config({ path: '.env' });
@@ -42,6 +43,11 @@ const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
         [ConfigEnum.DB_USERNAME]: Joi.string().default('root'),
         [ConfigEnum.DB_PASSWORD]: Joi.string().default(''),
         [ConfigEnum.DB_NAME]: Joi.string().default('test_db'),
+        [ConfigEnum.EMAIL_HOST]: Joi.string().required(),
+        [ConfigEnum.EMAIL_PORT]: Joi.number().default(465),
+        [ConfigEnum.EMAIL_AUTH_USER]: Joi.string().required(),
+        [ConfigEnum.EMAIL_AUTH_PASS]: Joi.string().required(),
+        [ConfigEnum.EMAIL_FROM]: Joi.string().required(),
       }),
     }),
     ServeStaticModule.forRoot({
@@ -77,6 +83,23 @@ const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
     TagModule,
     UploadModule,
     CosModule,
+    MailerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        transport: {
+          host: configService.get(ConfigEnum.EMAIL_HOST),
+          port: configService.get(ConfigEnum.EMAIL_PORT),
+          secure: true,
+          auth: {
+            user: configService.get(ConfigEnum.EMAIL_AUTH_USER),
+            pass: configService.get(ConfigEnum.EMAIL_AUTH_PASS),
+          },
+        },
+        defaults: {
+          from: configService.get(ConfigEnum.EMAIL_FROM),
+        },
+      }),
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],

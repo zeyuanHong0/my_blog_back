@@ -9,6 +9,7 @@ import { User } from '@/user/entities/user.entity';
 import { Blog } from '@/blog/entities/blog.entity';
 import { Tag } from '@/tag/entities/tag.entity';
 import { File } from '@/upload/entities/upload.entity';
+import { EmailCode } from '@/auth/entities/email-code.entity';
 
 // 通过环境变量读取不同的.env文件
 function getEnv(env: string): Record<string, any> {
@@ -31,8 +32,9 @@ function buildConnectionOptions(): TypeOrmModuleOptions {
     username: env[ConfigEnum.DB_USERNAME],
     password: env[ConfigEnum.DB_PASSWORD],
     database: env[ConfigEnum.DB_NAME],
-    entities: [User, Blog, Tag, File],
+    entities: [User, Blog, Tag, File, EmailCode],
     synchronize: true, // 注意：在生产环境中不要使用 synchronize: true
+    // logging: ['query', 'error'], // 日志
   };
 }
 

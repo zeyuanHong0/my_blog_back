@@ -32,4 +32,9 @@ export class AuthController {
     // 登出
     return this.authService.signout(res);
   }
+
+  @Post('sendCode')
+  sendCode(@Body('email') email: string) {
+    return this.authService.sendCode(email);
+  }
 }
