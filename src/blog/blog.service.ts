@@ -177,5 +177,10 @@ export class BlogService {
     };
   }
 
-  async remove(id: string) {}
+  async remove(id: string) {
+    await this.blogRepository.update(id, { is_delete: 1 });
+    return {
+      message: '博客删除成功',
+    };
+  }
 }
