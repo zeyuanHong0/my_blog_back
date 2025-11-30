@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 
 import { Blog } from '@/blog/entities/blog.entity';
+import { Role } from '@/enum/role.enum';
 
 @Entity('users')
 export class User {
@@ -23,8 +24,8 @@ export class User {
   @Column()
   email: string;
 
-  @Column({ default: 'test' })
-  accountType: string;
+  @Column({ default: Role.TOURIST })
+  accountType: Role;
 
   @CreateDateColumn({ type: 'datetime' })
   createTime: Date;

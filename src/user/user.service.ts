@@ -46,23 +46,28 @@ export class UserService {
   }
 
   async findOne(username: string) {
-    const user = await this.userRepository.findOne({
+    return await this.userRepository.findOne({
       where: {
         username,
       },
       select: ['id', 'username', 'password'],
     });
-    return user;
+  }
+
+  async findUserById(id: string) {
+    return await this.userRepository.findOne({
+      where: {
+        id,
+      },
+    });
   }
 
   async findUserByEmail(email: string) {
-    const user = await this.userRepository.findOne({
+    return await this.userRepository.findOne({
       where: {
         email,
       },
-      select: ['id', 'username', 'password'],
     });
-    return user;
   }
 
   async getUserInfoById(id: string) {

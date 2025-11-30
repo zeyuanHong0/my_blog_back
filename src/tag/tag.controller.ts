@@ -16,6 +16,9 @@ import { FormattedDateInterceptor } from '@/common/interceptors/formatted-date.i
 import { TagService } from './tag.service';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
+import { Roles } from '@/common/decorators/roles.decorator';
+import { Role } from '@/enum/role.enum';
+import { RolesGuard } from '@/auth/guards';
 
 @UseGuards(JwtAuthGuard)
 @Controller('tag')
@@ -23,6 +26,8 @@ export class TagController {
   constructor(private readonly tagService: TagService) {}
 
   @Post('createTag')
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
   create(@Body() createTagDto: CreateTagDto) {
     return this.tagService.create(createTagDto);
   }
@@ -49,11 +54,15 @@ export class TagController {
   }
 
   @Put('updateTag')
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
   update(@Body() updateTagDto: UpdateTagDto) {
     return this.tagService.update(updateTagDto);
   }
 
   @Delete('deleteTag/:id')
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
   remove(@Param('id') id: string) {
     return this.tagService.remove(id);
   }
