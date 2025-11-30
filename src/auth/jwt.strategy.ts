@@ -6,15 +6,18 @@ import type { Request } from 'express';
 
 import { ConfigEnum } from '@/enum/config.enum';
 import { JwtPayload } from './types/jwt-payload.type';
+import { UserService } from '@/user/user.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private userService: UserService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         // 优先从 cookie 中提取
         (request: Request) => {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           const token = request?.cookies?.token as string | undefined;
           return token ?? null;
         },
@@ -27,10 +30,18 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  validate(payload: JwtPayload) {
+  async validate(payload: JwtPayload) {
     if (!payload || !payload.id) {
       throw new UnauthorizedException('无效的 token');
     }
-    return { id: payload.id, username: payload.username };
+    const user = await this.userService.findUserById(payload.id);
+    if (!user) {
+      throw new UnauthorizedException('用户不存在');
+    }
+    return {
+      id: payload.id,
+      username: payload.username,
+      accountType: user.accountType,
+    };
   }
 }
