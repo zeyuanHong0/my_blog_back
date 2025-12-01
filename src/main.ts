@@ -13,6 +13,10 @@ async function bootstrap() {
   });
   app.useLogger(app.get(Logger)); //使用nestjs-pino作为日志记录器
   app.use(cookieParser()); // 启用 cookie-parser
+  app.enableCors({
+    origin: true,
+    credentials: true, // 允许携带 cookie
+  });
   app.setGlobalPrefix('api'); //设置全局前缀为 'api'
   app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));
   app.useGlobalInterceptors(new ResponseInterceptor());
