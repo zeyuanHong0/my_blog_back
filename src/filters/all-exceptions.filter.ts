@@ -36,7 +36,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
       // 清除无效的 cookie
       response.clearCookie('token', {
         httpOnly: true,
-        sameSite: 'strict',
+        secure: false,
+        sameSite: 'lax',
+        path: '/',
+        domain: '',
       });
 
       this.logger.warn(

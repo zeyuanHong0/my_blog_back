@@ -131,14 +131,13 @@ export class AuthService {
     const payload = { username: user.username, id: user.id };
     const token = this.jwtService.sign(payload);
 
-    // 判断是否为生产环境
-    const isProduction = this.configService.get('NODE_ENV') === 'production';
-
     // 设置 cookie
     res.cookie('token', token, {
       httpOnly: true, // 防止 XSS 攻击
-      secure: isProduction, // 生产环境使用 HTTPS
-      sameSite: 'strict', // 防止 CSRF 攻击
+      secure: false, // 如果没有 HTTPS，设为 false
+      sameSite: 'lax', // 允许同站导航携带 Cookie
+      path: '/', // 确保在所有路径下都可用
+      domain: '', // 明确设置为当前域名
       maxAge: 24 * 60 * 60 * 1000, // 1天
     });
 
@@ -180,14 +179,13 @@ export class AuthService {
     const payload = { username: newUser.username, id: newUser.id };
     const token = this.jwtService.sign(payload);
 
-    // 判断是否为生产环境
-    const isProduction = this.configService.get('NODE_ENV') === 'production';
-
     // 设置 cookie
     res.cookie('token', token, {
       httpOnly: true,
-      secure: isProduction,
-      sameSite: 'strict',
+      secure: false,
+      sameSite: 'lax',
+      path: '/',
+      domain: '',
       maxAge: 24 * 60 * 60 * 1000,
     });
 
@@ -200,8 +198,10 @@ export class AuthService {
     // 清除 cookie
     res.clearCookie('token', {
       httpOnly: true,
-      secure: this.configService.get('NODE_ENV') === 'production',
-      sameSite: 'strict',
+      secure: false,
+      sameSite: 'lax',
+      path: '/',
+      domain: '',
     });
     return {
       msg: '登出成功',
