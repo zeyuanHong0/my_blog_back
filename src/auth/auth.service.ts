@@ -17,6 +17,7 @@ import { UserService } from '@/user/user.service';
 import { SignupUserDto } from './dto/signup-user.dto';
 import { SigninUserDto } from './dto/signin-user.dto';
 import { EmailCode } from '@/auth/entities/email-code.entity';
+import { ConfigEnum } from '@/enum/config.enum';
 
 @Injectable()
 export class AuthService {
@@ -205,6 +206,22 @@ export class AuthService {
     });
     return {
       msg: '登出成功',
+    };
+  }
+
+  getGithubAuthorizeUrl() {
+    const clientId = this.configService.get(ConfigEnum.GITHUB_CLIENT_ID);
+    const redirectUri = this.configService.get(
+      ConfigEnum.GITHUB_CALLBACK_URL,
+    ) as string;
+    const scope = 'read:user user:email';
+    const state = Math.random().toString(36).substring(2);
+    const url = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${state}`;
+    return {
+      data: {
+        url,
+        state,
+      },
     };
   }
 }

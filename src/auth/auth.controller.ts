@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, Post, Res } from '@nestjs/common';
 import type { Response } from 'express';
 
 import { AuthService } from './auth.service';
@@ -36,5 +36,10 @@ export class AuthController {
   @Post('sendCode')
   sendCode(@Body('email') email: string) {
     return this.authService.sendCode(email);
+  }
+
+  @Get('/github/url')
+  getGithubAuthorizeUrl() {
+    return this.authService.getGithubAuthorizeUrl();
   }
 }
