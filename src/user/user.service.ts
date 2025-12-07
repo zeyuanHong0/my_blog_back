@@ -4,12 +4,16 @@ import { Repository } from 'typeorm';
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
+import { UserOauth } from '@/user/entities/user-oauth.entity';
+import { OAuthProvider } from '@/enum/oauth-provider.enum';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(UserOauth)
+    private readonly userOauthRepository: Repository<UserOauth>,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -18,6 +22,34 @@ export class UserService {
     const user = this.userRepository.create({ username, password, email });
     const savedUser = await this.userRepository.save(user);
     return savedUser;
+  }
+
+  async createOauthUser(
+    username: string,
+    email: string,
+    provider: OAuthProvider,
+    providerId: string | number,
+  ) {
+    const user = this.userRepository.create({ username, email });
+    const savedUser = await this.userRepository.save(user);
+    const userOauth = this.userOauthRepository.create({
+      userId: savedUser.id,
+      provider,
+      providerId: String(providerId),
+    });
+    await this.userOauthRepository.save(userOauth);
+    return savedUser;
+  }
+
+  async findOauthUser(provider: OAuthProvider, providerId: string | number) {
+    const userOauth = await this.userOauthRepository.findOne({
+      where: {
+        provider,
+        providerId: String(providerId),
+      },
+      relations: ['user'],
+    });
+    return userOauth?.user;
   }
 
   async findAll(username?: string) {

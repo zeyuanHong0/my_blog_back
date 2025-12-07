@@ -6,6 +6,7 @@ import * as fs from 'fs';
 import { ConfigEnum } from '@/enum/config.enum';
 
 import { User } from '@/user/entities/user.entity';
+import { UserOauth } from '@/user/entities/user-oauth.entity';
 import { Blog } from '@/blog/entities/blog.entity';
 import { Tag } from '@/tag/entities/tag.entity';
 import { File } from '@/upload/entities/upload.entity';
@@ -32,7 +33,7 @@ function buildConnectionOptions(): TypeOrmModuleOptions {
     username: env[ConfigEnum.DB_USERNAME],
     password: env[ConfigEnum.DB_PASSWORD],
     database: env[ConfigEnum.DB_NAME],
-    entities: [User, Blog, Tag, File, EmailCode],
+    entities: [User, UserOauth, Blog, Tag, File, EmailCode],
     synchronize: process.env.NODE_ENV === 'development', // 注意:在生产环境中不要使用 synchronize: true
     migrations: ['dist/migrations/*.js'], // build 后的迁移文件位置
     // logging: ['query', 'error'], // 日志

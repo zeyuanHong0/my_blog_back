@@ -11,13 +11,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { MailerService } from '@nestjs-modules/mailer';
+import { HttpService } from '@nestjs/axios';
 import type { Response } from 'express';
+import { firstValueFrom } from 'rxjs';
+import type { AxiosRequestConfig } from 'axios';
 
 import { UserService } from '@/user/user.service';
 import { SignupUserDto } from './dto/signup-user.dto';
 import { SigninUserDto } from './dto/signin-user.dto';
 import { EmailCode } from '@/auth/entities/email-code.entity';
 import { ConfigEnum } from '@/enum/config.enum';
+import { OAuthProvider } from '@/enum/oauth-provider.enum';
+import type { GithubUser, GithubEmail } from './types/github-user.type';
 
 @Injectable()
 export class AuthService {
@@ -28,6 +33,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly mailerService: MailerService,
+    private readonly httpService: HttpService,
   ) {}
 
   // 生成 6 位验证码
@@ -209,6 +215,9 @@ export class AuthService {
     };
   }
 
+  /**
+   * 获取 github 授权 url
+   */
   getGithubAuthorizeUrl() {
     const clientId = this.configService.get(ConfigEnum.GITHUB_CLIENT_ID);
     const redirectUri = this.configService.get(
@@ -223,5 +232,149 @@ export class AuthService {
         state,
       },
     };
+  }
+
+  /**
+   * github 登录
+   */
+  async githubLogin(code: string, res: Response) {
+    // 获取 access_token
+    const accessToken: string = await this.getGithubAccessToken(code);
+    // 获取github用户信息
+    const githubUserInfo: GithubUser =
+      await this.getGithubUserInfo(accessToken);
+    let email: string | null = githubUserInfo.email;
+    if (!githubUserInfo.email) {
+      // 获取用户邮箱
+      const emailList: GithubEmail[] =
+        await this.getGithubUserEmail(accessToken);
+      email = emailList.find((item) => item.primary && item.verified)
+        ?.email as string;
+    }
+
+    // 查找或创建用户
+    let user = await this.userService.findOauthUser(
+      OAuthProvider.GITHUB,
+      githubUserInfo.id,
+    );
+
+    if (!user) {
+      // 用户不存在，创建新用户
+      user = await this.userService.createOauthUser(
+        githubUserInfo.name,
+        email!,
+        OAuthProvider.GITHUB,
+        githubUserInfo.id,
+      );
+    }
+
+    const payload = { username: user.username, id: user.id };
+    const token = this.jwtService.sign(payload);
+
+    // 设置 cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      path: '/',
+      domain: '',
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+    // 重定向到前端成功页面
+    res.redirect('http://localhost:5173');
+
+    return {
+      message: '登录成功',
+      data: {
+        token,
+      },
+    };
+  }
+
+  /**
+   * 用code换取github access_token
+   */
+  async getGithubAccessToken(code: string) {
+    const requestConfig: AxiosRequestConfig = {
+      headers: { Accept: 'application/json' },
+      timeout: 10000,
+    };
+    const proxyHost = this.configService.get(ConfigEnum.HTTP_PROXY_HOST);
+    const proxyPort = this.configService.get(ConfigEnum.HTTP_PROXY_PORT);
+    if (proxyHost && proxyPort) {
+      requestConfig.proxy = {
+        host: proxyHost,
+        port: parseInt(proxyPort as string),
+        protocol: 'http',
+      };
+    }
+    const res: any = await firstValueFrom(
+      this.httpService.post(
+        'https://github.com/login/oauth/access_token',
+        {
+          client_id: this.configService.get('GITHUB_CLIENT_ID'),
+          client_secret: this.configService.get('GITHUB_CLIENT_SECRET'),
+          code: code,
+        },
+        requestConfig,
+      ),
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-member-access
+    return res.data.access_token;
+  }
+
+  /**
+   * 获取 github 用户信息
+   */
+  async getGithubUserInfo(accessToken: string) {
+    const requestConfig: AxiosRequestConfig = {
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      timeout: 10000,
+    };
+    const proxyHost = this.configService.get(ConfigEnum.HTTP_PROXY_HOST);
+    const proxyPort = this.configService.get(ConfigEnum.HTTP_PROXY_PORT);
+    if (proxyHost && proxyPort) {
+      requestConfig.proxy = {
+        host: proxyHost,
+        port: parseInt(proxyPort as string),
+        protocol: 'http',
+      };
+    }
+    const res: any = await firstValueFrom(
+      this.httpService.get('https://api.github.com/user', requestConfig),
+    );
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-member-access
+    return res.data;
+  }
+
+  /**
+   * 获取github 用户邮箱
+   */
+  async getGithubUserEmail(accessToken: string) {
+    const requestConfig: AxiosRequestConfig = {
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      timeout: 10000,
+    };
+    const proxyHost = this.configService.get(ConfigEnum.HTTP_PROXY_HOST);
+    const proxyPort = this.configService.get(ConfigEnum.HTTP_PROXY_PORT);
+    if (proxyHost && proxyPort) {
+      requestConfig.proxy = {
+        host: proxyHost,
+        port: parseInt(proxyPort as string),
+        protocol: 'http',
+      };
+    }
+    const res: any = await firstValueFrom(
+      this.httpService.get('https://api.github.com/user/emails', requestConfig),
+    );
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-member-access
+    return res.data;
   }
 }

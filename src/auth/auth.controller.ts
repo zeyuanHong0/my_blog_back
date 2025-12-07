@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
 
 import { AuthService } from './auth.service';
@@ -41,5 +41,13 @@ export class AuthController {
   @Get('/github/url')
   getGithubAuthorizeUrl() {
     return this.authService.getGithubAuthorizeUrl();
+  }
+
+  @Get('/github/callback')
+  async githubCallback(
+    @Query('code') code: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return await this.authService.githubLogin(code, res);
   }
 }

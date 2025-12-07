@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 
 import { Blog } from '@/blog/entities/blog.entity';
+import { UserOauth } from '@/user/entities/user-oauth.entity';
 import { Role } from '@/enum/role.enum';
 
 @Entity('users')
@@ -18,10 +19,10 @@ export class User {
   @Column({ unique: true })
   username: string;
 
-  @Column()
+  @Column({ nullable: true })
   password: string;
 
-  @Column()
+  @Column({ nullable: true })
   email: string;
 
   @Column({ default: Role.TOURIST })
@@ -38,4 +39,7 @@ export class User {
 
   @OneToMany(() => Blog, (blog) => blog.createUser)
   blogs: Blog[];
+
+  @OneToMany(() => UserOauth, (oauth) => oauth.user)
+  userOauths: UserOauth[];
 }
