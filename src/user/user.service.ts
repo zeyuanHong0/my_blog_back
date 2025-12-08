@@ -30,15 +30,20 @@ export class UserService {
     provider: OAuthProvider,
     providerId: string | number,
   ) {
-    const user = this.userRepository.create({ username, email });
-    const savedUser = await this.userRepository.save(user);
-    const userOauth = this.userOauthRepository.create({
-      userId: savedUser.id,
-      provider,
-      providerId: String(providerId),
-    });
-    await this.userOauthRepository.save(userOauth);
-    return savedUser;
+    let user = await this.findUserByEmail(email);
+    if (!user) {
+      user = await this.userRepository.save(
+        this.userRepository.create({ username, email }),
+      );
+    }
+    await this.userOauthRepository.save(
+      this.userOauthRepository.create({
+        userId: user.id,
+        provider,
+        providerId: String(providerId),
+      }),
+    );
+    return user;
   }
 
   async findOauthUser(provider: OAuthProvider, providerId: string | number) {
