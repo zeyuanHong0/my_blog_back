@@ -34,7 +34,7 @@ function buildConnectionOptions(): TypeOrmModuleOptions {
     password: env[ConfigEnum.DB_PASSWORD],
     database: env[ConfigEnum.DB_NAME],
     entities: [User, UserOauth, Blog, Tag, File, EmailCode],
-    synchronize: process.env.NODE_ENV === 'development', // 注意:在生产环境中不要使用 synchronize: true
+    synchronize: false, // 注意:在生产环境中不要使用 synchronize: true
     migrations: ['dist/migrations/*.js'], // build 后的迁移文件位置
     // logging: ['query', 'error'], // 日志
   };
@@ -44,6 +44,6 @@ export const connectionParams = buildConnectionOptions();
 
 export default new DataSource({
   ...connectionParams,
-  migrations: [],
+  migrations: ['src/migrations/*.ts'],
   subscribers: [],
 } as DataSourceOptions);
