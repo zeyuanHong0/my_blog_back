@@ -2,10 +2,10 @@ import {
   Column,
   Entity,
   PrimaryGeneratedColumn,
-  OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 
 import { User } from '@/user/entities/user.entity';
@@ -16,7 +16,7 @@ export class UserOauth {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ length: 36 })
   userId: string;
 
   @Column({ type: 'enum', enum: OAuthProvider })
@@ -31,6 +31,9 @@ export class UserOauth {
   @UpdateDateColumn({ type: 'datetime' })
   updateTime: Date;
 
-  @ManyToOne(() => User, (user) => user.userOauths)
+  @ManyToOne(() => User, (user) => user.userOauths, {
+    createForeignKeyConstraints: false,
+  })
+  @JoinColumn({ name: 'userId' })
   user: User;
 }

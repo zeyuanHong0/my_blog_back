@@ -30,11 +30,18 @@ export class Blog {
   @Column({ type: 'tinyint', default: 0 })
   published: number; // 0 未发布，1 已发布
 
-  @ManyToOne(() => User, (user) => user.blogs)
-  @JoinColumn({ name: 'createUser' })
-  createUser: User;
+  @Column({ length: 36, nullable: true })
+  createUser: string;
 
-  @ManyToMany(() => Tag, (tag) => tag.blogs)
+  @ManyToOne(() => User, (user) => user.blogs, {
+    createForeignKeyConstraints: false,
+  })
+  @JoinColumn({ name: 'createUser' })
+  createUserRelation: User;
+
+  @ManyToMany(() => Tag, (tag) => tag.blogs, {
+    createForeignKeyConstraints: false,
+  })
   @JoinTable({
     name: 'blog_tags',
     joinColumn: { name: 'blogId', referencedColumnName: 'id' },

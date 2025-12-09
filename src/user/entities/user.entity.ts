@@ -37,7 +37,7 @@ export class User {
   @Column({ type: 'tinyint', default: 0 })
   is_delete: number; // 0 未删除，1 已删除
 
-  @OneToMany(() => Blog, (blog) => blog.createUser)
+  @OneToMany(() => Blog, (blog) => blog.createUserRelation)
   blogs: Blog[];
 
   @OneToMany(() => UserOauth, (oauth) => oauth.user)
