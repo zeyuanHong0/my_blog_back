@@ -32,7 +32,7 @@ export class BlogService {
     // 创建博客实例
     const blog = this.blogRepository.create({
       ...blogData,
-      createUser: user,
+      createUser: user.id,
     });
 
     // 如果有标签，查找并关联标签

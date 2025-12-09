@@ -281,7 +281,9 @@ export class AuthService {
       maxAge: 24 * 60 * 60 * 1000,
     });
     // 重定向到前端成功页面
-    res.redirect('http://localhost:5173/github-callback');
+    res.redirect(
+      this.configService.get(ConfigEnum.GITHUB_REDIRECT_PAGE) as string,
+    );
 
     return {
       message: '登录成功',
