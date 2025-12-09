@@ -7,5 +7,6 @@ tmp/
 temp/
 files/
 logs/
+migrations/
 .env
 .env.*
