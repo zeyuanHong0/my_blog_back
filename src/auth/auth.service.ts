@@ -303,7 +303,7 @@ export class AuthService {
     };
     const proxyHost = this.configService.get(ConfigEnum.HTTP_PROXY_HOST);
     const proxyPort = this.configService.get(ConfigEnum.HTTP_PROXY_PORT);
-    if (proxyHost && proxyPort) {
+    if (process.env.NODE_ENV === 'development' && proxyHost && proxyPort) {
       requestConfig.proxy = {
         host: proxyHost,
         port: parseInt(proxyPort as string),
@@ -339,7 +339,7 @@ export class AuthService {
     };
     const proxyHost = this.configService.get(ConfigEnum.HTTP_PROXY_HOST);
     const proxyPort = this.configService.get(ConfigEnum.HTTP_PROXY_PORT);
-    if (proxyHost && proxyPort) {
+    if (process.env.NODE_ENV === 'development' && proxyHost && proxyPort) {
       requestConfig.proxy = {
         host: proxyHost,
         port: parseInt(proxyPort as string),
@@ -366,7 +366,7 @@ export class AuthService {
     };
     const proxyHost = this.configService.get(ConfigEnum.HTTP_PROXY_HOST);
     const proxyPort = this.configService.get(ConfigEnum.HTTP_PROXY_PORT);
-    if (proxyHost && proxyPort) {
+    if (process.env.NODE_ENV === 'development' && proxyHost && proxyPort) {
       requestConfig.proxy = {
         host: proxyHost,
         port: parseInt(proxyPort as string),
