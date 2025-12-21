@@ -1,0 +1,83 @@
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Like, Repository } from 'typeorm';
+
+import { Category } from '@/category/entities/category.entity';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
+
+@Injectable()
+export class CategoryService {
+  constructor(
+    @InjectRepository(Category)
+    private readonly categoryRepository: Repository<Category>,
+  ) {}
+
+  async create(createCategoryDto: CreateCategoryDto) {
+    const category = await this.categoryRepository.findOne({
+      where: {
+        name: createCategoryDto.name,
+      },
+    });
+    if (!category) {
+      return await this.categoryRepository.save(createCategoryDto);
+    } else {
+      throw new Error('分类已存在');
+    }
+  }
+
+  async findAll() {
+    const categoryList = await this.categoryRepository.find({
+      where: {
+        is_delete: 0,
+      },
+      select: ['id', 'name'],
+    });
+    return {
+      data: categoryList,
+    };
+  }
+
+  async findByPage(name: string, pageNum: number, pageSize: number) {
+    const [categoryList, total] = await this.categoryRepository.findAndCount({
+      where: {
+        is_delete: 0,
+        name: name ? Like(`%${name}%`) : undefined,
+      },
+      select: ['id', 'name', 'createTime', 'updateTime'],
+      skip: (pageNum - 1) * pageSize,
+      take: pageSize,
+      order: {
+        createTime: 'DESC',
+      },
+    });
+    return {
+      data: {
+        list: categoryList,
+        total,
+        pageNum: Number(pageNum),
+        pageSize: Number(pageSize),
+      },
+    };
+  }
+
+  async findOne(id: string) {
+    const category = await this.categoryRepository.findOne({
+      where: {
+        id,
+      },
+    });
+    return {
+      data: category,
+    };
+  }
+
+  async update(updateCategoryDto: UpdateCategoryDto) {
+    const { id, ...rest } = updateCategoryDto;
+    await this.categoryRepository.update(id, rest);
+  }
+
+  async remove(id: string) {
+    await this.categoryRepository.update(id, { is_delete: 1 });
+  }
+}

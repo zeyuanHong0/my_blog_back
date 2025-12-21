@@ -12,6 +12,7 @@ import {
 
 import { User } from '@/user/entities/user.entity';
 import { Tag } from '@/tag/entities/tag.entity';
+import { Category } from '@/category/entities/category.entity';
 
 @Entity('blogs')
 export class Blog {
@@ -48,6 +49,12 @@ export class Blog {
     inverseJoinColumn: { name: 'tagId', referencedColumnName: 'id' },
   })
   tags: Tag[];
+
+  @ManyToOne(() => Category, (category) => category.blogs, {
+    createForeignKeyConstraints: false,
+  })
+  @JoinColumn({ name: 'categoryId' })
+  category: Category;
 
   @CreateDateColumn({ type: 'datetime' })
   createTime: Date;
