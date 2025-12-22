@@ -66,6 +66,7 @@ export class CategoryService {
       where: {
         id,
       },
+      select: ['id', 'name', 'createTime', 'updateTime'],
     });
     return {
       data: category,
