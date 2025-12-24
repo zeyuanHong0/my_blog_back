@@ -132,6 +132,7 @@ export class BlogService {
     const blog = await this.blogRepository
       .createQueryBuilder('blog')
       .leftJoinAndSelect('blog.tags', 'tags')
+      .leftJoinAndSelect('blog.category', 'category')
       .where('blog.id = :id', { id })
       .andWhere('blog.is_delete = 0')
       .select([
@@ -145,6 +146,8 @@ export class BlogService {
         'tags.id',
         'tags.name',
         'tags.icon',
+        'category.id',
+        'category.name',
       ])
       .getOne();
     if (!blog) {
@@ -156,7 +159,12 @@ export class BlogService {
   }
 
   async update(updateBlogDto: UpdateBlogDto) {
-    const { id, tags: tagIds = [], ...blogData } = updateBlogDto;
+    const {
+      id,
+      category: categoryId,
+      tags: tagIds = [],
+      ...blogData
+    } = updateBlogDto;
     const blog = await this.blogRepository.findOne({
       where: { id, is_delete: 0 },
       relations: ['tags'],
@@ -164,6 +172,14 @@ export class BlogService {
     if (!blog) {
       throw new NotFoundException('博客不存在');
     }
+    // 查找分类
+    const findCategory = await this.categoryRepository.findOne({
+      where: { id: categoryId, is_delete: 0 },
+    });
+    if (!findCategory) {
+      throw new NotFoundException('分类不存在');
+    }
+    blog.category = findCategory;
     // 查出新的标签集合
     const newTags = await this.tagRepository.find({
       where: { id: In(tagIds) },
