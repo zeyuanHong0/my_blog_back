@@ -16,6 +16,9 @@ export class CreateBlogDto {
   @IsNotEmpty()
   published: number;
 
+  @IsNotEmpty()
+  category: string;
+
   @IsArray()
   @ArrayMinSize(1)
   tags: string[];

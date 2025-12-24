@@ -6,9 +6,10 @@ import { BlogFrontController } from './blog.front.controller';
 import { Blog } from './entities/blog.entity';
 import { Tag } from '@/tag/entities/tag.entity';
 import { User } from '@/user/entities/user.entity';
+import { Category } from '@/category/entities/category.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Blog, Tag, User])],
+  imports: [TypeOrmModule.forFeature([Blog, Tag, User, Category])],
   controllers: [BlogController, BlogFrontController],
   providers: [BlogService],
 })

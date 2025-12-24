@@ -6,6 +6,7 @@ import { UpdateBlogDto } from './dto/update-blog.dto';
 import { Blog } from './entities/blog.entity';
 import { Tag } from '@/tag/entities/tag.entity';
 import { User } from '@/user/entities/user.entity';
+import { Category } from '@/category/entities/category.entity';
 
 @Injectable()
 export class BlogService {
@@ -16,10 +17,12 @@ export class BlogService {
     private readonly tagRepository: Repository<Tag>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Category)
+    private readonly categoryRepository: Repository<Category>,
   ) {}
 
   async create(createBlogDto: CreateBlogDto, userId: string) {
-    const { tags, ...blogData } = createBlogDto;
+    const { tags, category: categoryId, ...blogData } = createBlogDto;
 
     // 验证用户是否存在
     const user = await this.userRepository.findOne({
@@ -34,6 +37,17 @@ export class BlogService {
       ...blogData,
       createUser: user.id,
     });
+
+    // 如果有分类，查找并关联分类
+    if (categoryId) {
+      const findCategory = await this.categoryRepository.findOne({
+        where: { id: categoryId },
+      });
+      if (!findCategory) {
+        throw new NotFoundException('分类不存在');
+      }
+      blog.category = findCategory;
+    }
 
     // 如果有标签，查找并关联标签
     if (tags && tags.length > 0) {
@@ -78,6 +92,7 @@ export class BlogService {
     const queryBuilder = this.blogRepository
       .createQueryBuilder('blog')
       .leftJoinAndSelect('blog.tags', 'tag')
+      .leftJoinAndSelect('blog.category', 'category')
       .select([
         'blog.id',
         'blog.title',
@@ -86,6 +101,8 @@ export class BlogService {
         'blog.updateTime',
         'tag.id',
         'tag.name',
+        'category.id',
+        'category.name',
       ])
       .where('blog.is_delete = :isDelete', { isDelete: 0 })
       .orderBy('blog.createTime', 'DESC')
