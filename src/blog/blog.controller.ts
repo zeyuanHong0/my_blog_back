@@ -43,8 +43,16 @@ export class BlogController {
     @Query('title') title: string,
     @Query('pageNum') pageNum: number,
     @Query('pageSize') pageSize: number,
+    @Query('searchCategoryId') searchCategoryId: string,
+    @Query('searchTags') searchTags: string,
   ) {
-    return this.blogService.findByPage(title, pageNum, pageSize);
+    return this.blogService.findByPage(
+      title,
+      pageNum,
+      pageSize,
+      searchCategoryId,
+      searchTags,
+    );
   }
 
   @Get('getAllBlogs')

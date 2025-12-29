@@ -88,7 +88,13 @@ export class BlogService {
     };
   }
 
-  async findByPage(title: string, pageNum: number, pageSize: number) {
+  async findByPage(
+    title: string,
+    pageNum: number,
+    pageSize: number,
+    searchCategoryId: string,
+    searchTags: string,
+  ) {
     const queryBuilder = this.blogRepository
       .createQueryBuilder('blog')
       .leftJoinAndSelect('blog.tags', 'tag')
@@ -114,6 +120,21 @@ export class BlogService {
       queryBuilder.andWhere('blog.title LIKE :title', {
         title: `%${title}%`,
       });
+    }
+
+    // 如果有分类搜索条件
+    if (searchCategoryId) {
+      queryBuilder.andWhere('category.id = :searchCategoryId', {
+        searchCategoryId,
+      });
+    }
+
+    // 如果有标签搜索条件（逗号分隔的字符串）
+    if (searchTags) {
+      const tagIds = searchTags.split(',').filter((id) => id.trim());
+      if (tagIds.length > 0) {
+        queryBuilder.andWhere('tag.id IN (:...tagIds)', { tagIds });
+      }
     }
 
     const [blogList, total] = await queryBuilder.getManyAndCount();
