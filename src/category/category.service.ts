@@ -81,4 +81,25 @@ export class CategoryService {
   async remove(id: string) {
     await this.categoryRepository.update(id, { is_delete: 1 });
   }
+
+  async getAllCategoryList() {
+    const categoryList = await this.categoryRepository
+      .createQueryBuilder('category')
+      .where('category.is_delete = :is_delete', { is_delete: 0 })
+      .select(['category.id', 'category.name'])
+      .loadRelationCountAndMap(
+        'category.blogCount',
+        'category.blogs',
+        'blog',
+        (qb) => qb.where('blog.is_delete = :is_delete', { is_delete: 0 }),
+      )
+      .getMany();
+    return {
+      data: {
+        list: categoryList,
+      },
+    };
+  }
+
+  async getCategoryInfo(id: string) {}
 }
