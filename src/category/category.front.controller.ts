@@ -1,14 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Delete,
-  UseInterceptors,
-  Query,
-  Put,
-} from '@nestjs/common';
+import { Controller, Get, Param, UseInterceptors } from '@nestjs/common';
 
 import { CategoryService } from './category.service';
 import { FormattedDateInterceptor } from '@/common/interceptors/formatted-date.interceptor';
