@@ -69,6 +69,7 @@ export class BlogService {
     const blogList = await this.blogRepository
       .createQueryBuilder('blog')
       .leftJoinAndSelect('blog.tags', 'tags')
+      .leftJoinAndSelect('blog.category', 'category')
       .where('blog.is_delete = :isDelete', { isDelete: 0 })
       .andWhere('blog.published = :published', { published: 1 })
       .select([
@@ -79,6 +80,7 @@ export class BlogService {
         'tags.id',
         'tags.name',
         'tags.icon',
+        'category.name',
       ])
       .orderBy('blog.createTime', 'DESC')
       .getMany();
