@@ -162,7 +162,6 @@ export class BlogService {
         'blog.id',
         'blog.title',
         'blog.description',
-        'blog.published',
         'blog.content',
         'blog.createTime',
         'blog.updateTime',
