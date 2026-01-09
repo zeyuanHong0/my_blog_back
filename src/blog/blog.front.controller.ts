@@ -15,4 +15,12 @@ export class BlogFrontController {
   findOne(@Param('id') id: string) {
     return this.blogService.findOne(id);
   }
+
+  /**
+   * 获取归档信息
+   */
+  @Get('getArchives')
+  getArchives() {
+    return this.blogService.getArchives();
+  }
 }

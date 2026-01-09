@@ -180,6 +180,22 @@ export class BlogService {
     };
   }
 
+  async getArchives() {
+    const archivesList = await this.blogRepository.find({
+      where: {
+        is_delete: 0,
+        published: 1,
+      },
+      select: ['id', 'title', 'createTime'],
+      order: {
+        createTime: 'DESC',
+      },
+    });
+    return {
+      data: archivesList,
+    };
+  }
+
   async update(updateBlogDto: UpdateBlogDto) {
     const {
       id,
