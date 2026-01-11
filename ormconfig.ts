@@ -36,7 +36,11 @@ function buildConnectionOptions(): TypeOrmModuleOptions {
     database: env[ConfigEnum.DB_NAME],
     entities: [User, UserOauth, Blog, Tag, File, EmailCode, Category],
     synchronize: false, // 注意:在生产环境中不要使用 synchronize: true
-    migrations: ['dist/migrations/*.js'], // build 后的迁移文件位置
+    migrations: [
+      process.env.NODE_ENV === 'production'
+        ? 'dist/src/migrations/*.js' // 生产环境用编译后的
+        : 'src/migrations/*.ts', // 开发环境用源码
+    ],
     // logging: ['query', 'error'], // 日志
   };
 }
@@ -45,6 +49,10 @@ export const connectionParams = buildConnectionOptions();
 
 export default new DataSource({
   ...connectionParams,
-  migrations: ['src/migrations/*.ts'],
+  migrations: [
+    process.env.NODE_ENV === 'production'
+      ? 'dist/src/migrations/*.js' // 生产环境用编译后的
+      : 'src/migrations/*.ts', // 开发环境用源码
+  ],
   subscribers: [],
 } as DataSourceOptions);
