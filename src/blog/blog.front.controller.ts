@@ -13,7 +13,7 @@ export class BlogFrontController {
 
   @Get('getBlogInfo/:id')
   findOne(@Param('id') id: string) {
-    return this.blogService.findOne(id);
+    return this.blogService.getFrontInfo(id);
   }
 
   /**

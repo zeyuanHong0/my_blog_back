@@ -64,7 +64,7 @@ export class BlogController {
   @Get('getBlogInfo/:id')
   @UseInterceptors(FormattedDateInterceptor)
   findOne(@Param('id') id: string) {
-    return this.blogService.findOne(id);
+    return this.blogService.getInfo(id);
   }
 
   @Put('updateBlog')

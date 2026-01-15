@@ -151,18 +151,45 @@ export class BlogService {
     };
   }
 
-  async findOne(id: string) {
+  async getInfo(id: string) {
     const blog = await this.blogRepository
       .createQueryBuilder('blog')
       .leftJoinAndSelect('blog.tags', 'tags')
       .leftJoinAndSelect('blog.category', 'category')
       .where('blog.id = :id', { id })
-      .andWhere('blog.is_delete = 0')
       .select([
         'blog.id',
         'blog.title',
         'blog.description',
         'blog.content',
+        'blog.published',
+        'tags.id',
+        'tags.name',
+        'category.id',
+        'category.name',
+      ])
+      .getOne();
+    if (!blog) {
+      throw new NotFoundException('博客不存在');
+    }
+    return {
+      data: blog,
+    };
+  }
+
+  async getFrontInfo(id: string) {
+    const blog = await this.blogRepository
+      .createQueryBuilder('blog')
+      .leftJoinAndSelect('blog.tags', 'tags')
+      .leftJoinAndSelect('blog.category', 'category')
+      .where('blog.id = :id', { id })
+      .andWhere('blog.is_delete = 0 AND blog.published = 1')
+      .select([
+        'blog.id',
+        'blog.title',
+        'blog.description',
+        'blog.content',
+        'blog.aiSummary',
         'blog.createTime',
         'blog.updateTime',
         'tags.id',
