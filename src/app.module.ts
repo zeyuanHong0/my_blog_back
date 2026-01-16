@@ -20,6 +20,7 @@ import { TagModule } from './tag/tag.module';
 import { UploadModule } from './upload/upload.module';
 import { CosModule } from './cos/cos.module';
 import { CategoryModule } from './category/category.module';
+import { AiModule } from './ai/ai.module';
 
 // console.log('NODE_ENV:', process.env.NODE_ENV);
 const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
@@ -102,6 +103,7 @@ const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
       }),
     }),
     CategoryModule,
+    AiModule,
   ],
   controllers: [AppController],
   providers: [AppService],

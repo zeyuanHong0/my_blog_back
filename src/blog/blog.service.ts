@@ -7,6 +7,7 @@ import { Blog } from './entities/blog.entity';
 import { Tag } from '@/tag/entities/tag.entity';
 import { User } from '@/user/entities/user.entity';
 import { Category } from '@/category/entities/category.entity';
+import { AiService } from '@/ai/ai.service';
 
 @Injectable()
 export class BlogService {
@@ -19,6 +20,7 @@ export class BlogService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+    private readonly aiService: AiService,
   ) {}
 
   async create(createBlogDto: CreateBlogDto, userId: string) {
@@ -256,9 +258,23 @@ export class BlogService {
     // 更新其他字段
     Object.assign(blog, blogData);
     await this.blogRepository.save(blog);
+    // 更新博客AI总结
+    this.generateAiSummaryAsync(id, blog.content);
     return {
       message: '博客更新成功',
     };
+  }
+
+  private generateAiSummaryAsync(blogId: string, content: string) {
+    this.aiService
+      .summarizeBlog(content)
+      .then(async (summary) => {
+        await this.blogRepository.update(blogId, { aiSummary: summary });
+        console.log(`AI 总结生成成功 [blogId: ${blogId}]`);
+      })
+      .catch((error) => {
+        console.error(`AI 总结生成失败 [blogId: ${blogId}]:`, error);
+      });
   }
 
   async changeStatus(id: string, published: number) {

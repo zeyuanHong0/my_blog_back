@@ -34,6 +34,9 @@ export class Blog {
   @Column({ length: 36, nullable: true })
   createUser: string;
 
+  @Column({ type: 'text', nullable: true })
+  aiSummary: string;
+
   @ManyToOne(() => User, (user) => user.blogs, {
     createForeignKeyConstraints: false,
   })
