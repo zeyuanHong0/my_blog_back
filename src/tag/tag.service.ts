@@ -99,6 +99,7 @@ export class TagService {
           is_delete: 0,
         },
       )
+      .leftJoinAndSelect('blogs.category', 'blog_category')
       .where('tag.id = :id', { id })
       .select([
         'tag.id',
@@ -111,6 +112,7 @@ export class TagService {
         'blog_tags.id',
         'blog_tags.icon',
         'blog_tags.name',
+        'blog_category.name',
       ])
       .getOne();
 

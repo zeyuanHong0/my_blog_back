@@ -125,7 +125,7 @@ export class CategoryService {
           is_delete: 0,
         },
       )
-      .where('category.id = :id', { id })
+      .leftJoinAndSelect('blogs.category', 'blog_category')
       .select([
         'category.id',
         'category.name',
@@ -137,6 +137,7 @@ export class CategoryService {
         'blog_tags.id',
         'blog_tags.icon',
         'blog_tags.name',
+        'blog_category.name',
       ])
       .getOne();
     return {
