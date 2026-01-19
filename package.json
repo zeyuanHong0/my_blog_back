@@ -21,8 +21,10 @@
     "typeorm": "typeorm-ts-node-commonjs",
     "typeormCli": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "migration:generate": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:generate -d ormconfig.ts",
+    "migration:generate:prod": "NODE_ENV=production ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:generate -d ormconfig.ts",
     "migration:create": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:create",
     "migration:run": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d ormconfig.ts",
+    "migration:run:prod": "NODE_ENV=production node ./node_modules/typeorm/cli.js migration:run -d dist/ormconfig.js",
     "migration:revert": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert -d ormconfig.ts"
   },
   "dependencies": {
