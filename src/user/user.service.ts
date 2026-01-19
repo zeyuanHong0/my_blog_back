@@ -33,7 +33,7 @@ export class UserService {
     let user = await this.findUserByEmail(email);
     if (!user) {
       user = await this.userRepository.save(
-        this.userRepository.create({ username, email }),
+        this.userRepository.create({ username: username || '无名侠', email }),
       );
     }
     await this.userOauthRepository.save(

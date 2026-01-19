@@ -82,6 +82,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
       'Unhandled exception',
     );
 
+    // 如果响应已经发送（例如已经执行了 res.redirect），则不再尝试发送 JSON 响应
+    if (response.headersSent) {
+      return;
+    }
+
     response.status(status).json({
       code: status,
       path: request.url,

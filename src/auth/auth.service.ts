@@ -14,7 +14,6 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { HttpService } from '@nestjs/axios';
 import type { Response } from 'express';
 import { firstValueFrom } from 'rxjs';
-import type { AxiosRequestConfig } from 'axios';
 
 import { UserService } from '@/user/user.service';
 import { SignupUserDto } from './dto/signup-user.dto';
@@ -23,6 +22,7 @@ import { EmailCode } from '@/auth/entities/email-code.entity';
 import { ConfigEnum } from '@/enum/config.enum';
 import { OAuthProvider } from '@/enum/oauth-provider.enum';
 import type { GithubUser, GithubEmail } from './types/github-user.type';
+import { getAxiosConfig } from '@/utils';
 
 @Injectable()
 export class AuthService {
@@ -47,6 +47,11 @@ export class AuthService {
     const reg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!reg.test(email)) {
       throw new BadRequestException('邮箱格式不正确');
+    }
+    // 检查邮箱是否已存在
+    const existingEmail = await this.userService.findUserByEmail(email);
+    if (existingEmail) {
+      throw new ConflictException('邮箱已存在');
     }
 
     const last = await this.emailCodeRepository.findOne({
@@ -284,32 +289,13 @@ export class AuthService {
     res.redirect(
       this.configService.get(ConfigEnum.GITHUB_REDIRECT_PAGE) as string,
     );
-
-    return {
-      message: '登录成功',
-      data: {
-        token,
-      },
-    };
   }
 
   /**
    * 用code换取github access_token
    */
   async getGithubAccessToken(code: string) {
-    const requestConfig: AxiosRequestConfig = {
-      headers: { Accept: 'application/json' },
-      timeout: 10000,
-    };
-    const proxyHost = this.configService.get(ConfigEnum.HTTP_PROXY_HOST);
-    const proxyPort = this.configService.get(ConfigEnum.HTTP_PROXY_PORT);
-    if (process.env.NODE_ENV === 'development' && proxyHost && proxyPort) {
-      requestConfig.proxy = {
-        host: proxyHost,
-        port: parseInt(proxyPort as string),
-        protocol: 'http',
-      };
-    }
+    const requestConfig = getAxiosConfig(this.configService);
     const res: any = await firstValueFrom(
       this.httpService.post(
         'https://github.com/login/oauth/access_token',
@@ -330,22 +316,9 @@ export class AuthService {
    * 获取 github 用户信息
    */
   async getGithubUserInfo(accessToken: string) {
-    const requestConfig: AxiosRequestConfig = {
-      headers: {
-        Accept: 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-      timeout: 10000,
-    };
-    const proxyHost = this.configService.get(ConfigEnum.HTTP_PROXY_HOST);
-    const proxyPort = this.configService.get(ConfigEnum.HTTP_PROXY_PORT);
-    if (process.env.NODE_ENV === 'development' && proxyHost && proxyPort) {
-      requestConfig.proxy = {
-        host: proxyHost,
-        port: parseInt(proxyPort as string),
-        protocol: 'http',
-      };
-    }
+    const requestConfig = getAxiosConfig(this.configService, {
+      Authorization: `Bearer ${accessToken}`,
+    });
     const res: any = await firstValueFrom(
       this.httpService.get('https://api.github.com/user', requestConfig),
     );
@@ -357,22 +330,9 @@ export class AuthService {
    * 获取github 用户邮箱
    */
   async getGithubUserEmail(accessToken: string) {
-    const requestConfig: AxiosRequestConfig = {
-      headers: {
-        Accept: 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-      timeout: 10000,
-    };
-    const proxyHost = this.configService.get(ConfigEnum.HTTP_PROXY_HOST);
-    const proxyPort = this.configService.get(ConfigEnum.HTTP_PROXY_PORT);
-    if (process.env.NODE_ENV === 'development' && proxyHost && proxyPort) {
-      requestConfig.proxy = {
-        host: proxyHost,
-        port: parseInt(proxyPort as string),
-        protocol: 'http',
-      };
-    }
+    const requestConfig = getAxiosConfig(this.configService, {
+      Authorization: `Bearer ${accessToken}`,
+    });
     const res: any = await firstValueFrom(
       this.httpService.get('https://api.github.com/user/emails', requestConfig),
     );

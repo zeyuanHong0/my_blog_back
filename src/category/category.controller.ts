@@ -19,12 +19,14 @@ import { FormattedDateInterceptor } from '@/common/interceptors/formatted-date.i
 import { Roles } from '@/common/decorators/roles.decorator';
 import { Role } from '@/enum/role.enum';
 
-// @UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 @Controller('category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
   @Post('createCategory')
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
   create(@Body() createCategoryDto: CreateCategoryDto) {
     return this.categoryService.create(createCategoryDto);
   }
@@ -51,11 +53,15 @@ export class CategoryController {
   }
 
   @Put('updateCategory')
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
   update(@Body() updateCategoryDto: UpdateCategoryDto) {
     return this.categoryService.update(updateCategoryDto);
   }
 
   @Delete('deleteCategory/:id')
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
   remove(@Param('id') id: string) {
     return this.categoryService.remove(id);
   }
