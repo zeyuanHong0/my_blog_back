@@ -19,6 +19,9 @@ export class Tag {
   @Column({ type: 'text', nullable: true })
   icon?: string;
 
+  @Column({ type: 'text', nullable: true })
+  icon_dark?: string;
+
   @CreateDateColumn({ type: 'datetime' })
   createTime: Date;
 

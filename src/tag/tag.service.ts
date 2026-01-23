@@ -37,7 +37,7 @@ export class TagService {
       .createQueryBuilder('tag')
       .leftJoin('tag.blogs', 'blogs')
       .where('tag.is_delete = :is_delete', { is_delete: 0 })
-      .select(['tag.id', 'tag.name', 'tag.icon'])
+      .select(['tag.id', 'tag.name', 'tag.icon', 'tag.icon_dark'])
       .loadRelationCountAndMap('tag.blogCount', 'tag.blogs', 'blog', (qb) =>
         qb
           .where('blog.is_delete = :blog_is_delete', { blog_is_delete: 0 })
@@ -52,11 +52,12 @@ export class TagService {
   async findByPage(name: string, pageNum: number, pageSize: number) {
     const [tagList, total] = await this.tagRepository.findAndCount({
       where: { is_delete: 0, name: name ? Like(`%${name}%`) : undefined },
-      select: ['id', 'name', 'icon', 'createTime', 'updateTime'],
+      select: ['id', 'name', 'icon', 'icon_dark', 'createTime', 'updateTime'],
       skip: (pageNum - 1) * pageSize,
       take: pageSize,
       order: {
         createTime: 'DESC',
+        id: 'DESC',
       },
     });
     return {
@@ -72,7 +73,7 @@ export class TagService {
   async findOne(id: string) {
     const tag = await this.tagRepository.findOne({
       where: { id, is_delete: 0 },
-      select: ['id', 'name', 'icon', 'createTime', 'updateTime'],
+      select: ['id', 'name', 'icon', 'icon_dark', 'createTime', 'updateTime'],
     });
     return {
       data: tag,
@@ -110,7 +111,6 @@ export class TagService {
         'blogs.createTime',
         'blogs.updateTime',
         'blog_tags.id',
-        'blog_tags.icon',
         'blog_tags.name',
         'blog_category.name',
       ])

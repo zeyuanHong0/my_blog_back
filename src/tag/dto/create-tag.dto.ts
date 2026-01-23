@@ -11,4 +11,11 @@ export class CreateTagDto {
   )
   @IsSafeSvg({ message: 'SVG 格式不合法或存在安全隐患' })
   icon?: string;
+
+  @ValidateIf(
+    (o: CreateTagDto) =>
+      o.icon_dark !== undefined && o.icon_dark !== null && o.icon_dark !== '',
+  )
+  @IsSafeSvg({ message: 'SVG 格式不合法或存在安全隐患' })
+  icon_dark?: string;
 }

@@ -197,6 +197,7 @@ export class BlogService {
         'tags.id',
         'tags.name',
         'tags.icon',
+        'tags.icon_dark',
         'category.id',
         'category.name',
       ])
