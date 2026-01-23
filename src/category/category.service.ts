@@ -126,6 +126,7 @@ export class CategoryService {
         },
       )
       .leftJoinAndSelect('blogs.category', 'blog_category')
+      .where('category.id = :id', { id })
       .select([
         'category.id',
         'category.name',
