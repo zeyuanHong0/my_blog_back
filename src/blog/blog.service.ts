@@ -62,6 +62,8 @@ export class BlogService {
       blog.tags = findTags;
     }
     await this.blogRepository.save(blog);
+    // AI总结
+    this.generateAiSummaryAsync(blog.id, blog.content);
     return {
       message: '博客创建成功',
     };
@@ -165,6 +167,7 @@ export class BlogService {
         'blog.description',
         'blog.content',
         'blog.published',
+        'blog.aiSummary',
         'tags.id',
         'tags.name',
         'category.id',
@@ -231,6 +234,7 @@ export class BlogService {
       id,
       category: categoryId,
       tags: tagIds = [],
+      aiSummary,
       ...blogData
     } = updateBlogDto;
     const blog = await this.blogRepository.findOne({
@@ -257,10 +261,12 @@ export class BlogService {
     }
     blog.tags = newTags;
     // 更新其他字段
-    Object.assign(blog, blogData);
+    Object.assign(blog, blogData, { aiSummary });
     await this.blogRepository.save(blog);
-    // 更新博客AI总结
-    this.generateAiSummaryAsync(id, blog.content);
+    if (!aiSummary.trim()) {
+      // 如果AI总结是空的，更新博客AI总结
+      this.generateAiSummaryAsync(id, blog.content);
+    }
     return {
       message: '博客更新成功',
     };
