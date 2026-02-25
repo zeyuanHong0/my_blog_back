@@ -304,4 +304,38 @@ export class BlogService {
       message: '博客删除成功',
     };
   }
+
+  // ********************************小程序相关************************************
+
+  async getLatestBlogList(num: number) {
+    const blogList = await this.blogRepository
+      .createQueryBuilder('blog')
+      .leftJoinAndSelect('blog.tags', 'tags')
+      .where('blog.is_delete = :isDelete', { isDelete: 0 })
+      .andWhere('blog.published = :published', { published: 1 })
+      .select([
+        'blog.id',
+        'blog.title',
+        'blog.description',
+        'blog.createTime',
+        'tags.id',
+        'tags.name',
+      ])
+      .orderBy('blog.createTime', 'DESC')
+      .take(num)
+      .getMany();
+
+    return {
+      data: blogList,
+    };
+  }
+
+  async getBlogCount() {
+    const blogCount = await this.blogRepository.count({
+      where: { is_delete: 0, published: 1 },
+    });
+    return {
+      data: blogCount,
+    };
+  }
 }

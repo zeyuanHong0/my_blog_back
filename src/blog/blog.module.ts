@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { BlogService } from './blog.service';
 import { BlogController } from './blog.controller';
 import { BlogFrontController } from './blog.front.controller';
+import { BlogMiniAppController } from './blog.miniapp.controller';
 import { AiModule } from '@/ai/ai.module';
 import { Blog } from './entities/blog.entity';
 import { Tag } from '@/tag/entities/tag.entity';
@@ -11,7 +12,7 @@ import { Category } from '@/category/entities/category.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Blog, Tag, User, Category]), AiModule],
-  controllers: [BlogController, BlogFrontController],
+  controllers: [BlogController, BlogFrontController, BlogMiniAppController],
   providers: [BlogService],
 })
 export class BlogModule {}

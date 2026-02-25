@@ -129,4 +129,15 @@ export class TagService {
   async remove(id: string) {
     await this.tagRepository.update(id, { is_delete: 1 });
   }
+
+  //*********************************小程序相关***********************************
+
+  async getTagCount() {
+    const tagCount = await this.tagRepository.count({
+      where: { is_delete: 0 },
+    });
+    return {
+      data: tagCount,
+    };
+  }
 }

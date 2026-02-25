@@ -145,4 +145,17 @@ export class CategoryService {
       data: categoryInfo,
     };
   }
+
+  //**************************************小程序相关************************************
+
+  async getCategoryCount() {
+    const categoryCount = await this.categoryRepository.count({
+      where: {
+        is_delete: 0,
+      },
+    });
+    return {
+      data: categoryCount,
+    };
+  }
 }

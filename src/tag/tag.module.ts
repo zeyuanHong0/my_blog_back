@@ -5,10 +5,11 @@ import { TagController } from './tag.controller';
 import { Tag } from './entities/tag.entity';
 import { Blog } from '@/blog/entities/blog.entity';
 import { TagFrontController } from './tag.front.controller';
+import { TagMiniAppController } from './tag.miniapp.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Tag, Blog])],
-  controllers: [TagController, TagFrontController],
+  controllers: [TagController, TagFrontController, TagMiniAppController],
   providers: [TagService],
 })
 export class TagModule {}
