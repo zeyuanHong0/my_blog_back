@@ -8,7 +8,7 @@ export class BlogMiniAppController {
 
   // 获取最新的博客列表
   @Get('getLatestBlogList')
-  findAll(@Query('num', ParseIntPipe) num: number) {
+  findLatest(@Query('num', ParseIntPipe) num: number) {
     return this.blogService.getLatestBlogList(num);
   }
 
@@ -18,8 +18,14 @@ export class BlogMiniAppController {
     return this.blogService.getBlogCount();
   }
 
+  // 获取所有博客
+  @Get('getAllBlogList')
+  getMiniAppBlogList() {
+    return this.blogService.getMiniAppBlogList();
+  }
+
   @Get('getBlogInfo/:id')
   findOne(@Param('id') id: string) {
-    return this.blogService.getFrontInfo(id);
+    return this.blogService.getMiniAppBlogInfo(id);
   }
 }

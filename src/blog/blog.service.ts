@@ -338,4 +338,51 @@ export class BlogService {
       data: blogCount,
     };
   }
+
+  async getMiniAppBlogList() {
+    const blogList = await this.blogRepository
+      .createQueryBuilder('blog')
+      .leftJoinAndSelect('blog.tags', 'tags')
+      .where('blog.is_delete = :isDelete', { isDelete: 0 })
+      .andWhere('blog.published = :published', { published: 1 })
+      .select([
+        'blog.id',
+        'blog.title',
+        'blog.description',
+        'blog.createTime',
+        'tags.id',
+        'tags.name',
+      ])
+      .orderBy('blog.createTime', 'DESC')
+      .getMany();
+    return {
+      data: blogList,
+    };
+  }
+
+  async getMiniAppBlogInfo(id: string) {
+    const blog = await this.blogRepository
+      .createQueryBuilder('blog')
+      .leftJoinAndSelect('blog.tags', 'tags')
+      .leftJoinAndSelect('blog.category', 'category')
+      .where('blog.id = :id', { id })
+      .andWhere('blog.is_delete = 0 AND blog.published = 1')
+      .select([
+        'blog.id',
+        'blog.title',
+        'blog.description',
+        'blog.aiSummary',
+        'blog.content',
+        'blog.createTime',
+        'blog.updateTime',
+        'tags.id',
+        'tags.name',
+        'category.id',
+        'category.name',
+      ])
+      .getOne();
+    return {
+      data: blog,
+    };
+  }
 }
