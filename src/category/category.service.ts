@@ -158,4 +158,27 @@ export class CategoryService {
       data: categoryCount,
     };
   }
+
+  async getMiniAppAllCategoryList() {
+    const categoryList = await this.categoryRepository
+      .createQueryBuilder('category')
+      .where('category.is_delete = :is_delete', { is_delete: 0 })
+      .select(['category.id', 'category.name'])
+      .loadRelationCountAndMap(
+        'category.blogCount',
+        'category.blogs',
+        'blog',
+        (qb) =>
+          qb.where(
+            'blog.is_delete = :is_delete AND blog.published = :published',
+            { is_delete: 0, published: 1 },
+          ),
+      )
+      .getMany();
+    return {
+      data: {
+        list: categoryList,
+      },
+    };
+  }
 }

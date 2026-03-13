@@ -14,7 +14,7 @@ export class CategoryMiniAppController {
 
   @Get('getAllCategoryList')
   findByPage() {
-    return this.categoryService.getAllCategoryList();
+    return this.categoryService.getMiniAppAllCategoryList();
   }
 
   @Get('getCategoryInfo/:id')
