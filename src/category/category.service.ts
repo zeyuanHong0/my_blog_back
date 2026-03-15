@@ -181,4 +181,43 @@ export class CategoryService {
       },
     };
   }
+
+  async getMiniAppCategoryInfo(id: string) {
+    const categoryInfo = await this.categoryRepository
+      .createQueryBuilder('category')
+      .leftJoinAndSelect(
+        'category.blogs',
+        'blogs',
+        'blogs.is_delete = :is_delete AND blogs.published = :published',
+        {
+          is_delete: 0,
+          published: 1,
+        },
+      )
+      .leftJoinAndSelect(
+        'blogs.tags',
+        'blog_tags',
+        'blog_tags.is_delete = :is_delete',
+        {
+          is_delete: 0,
+        },
+      )
+      .leftJoinAndSelect('blogs.category', 'blog_category')
+      .where('category.id = :id', { id })
+      .select([
+        'category.id',
+        'category.name',
+        'blogs.id',
+        'blogs.title',
+        'blogs.description',
+        'blogs.createTime',
+        'blogs.updateTime',
+        'blog_tags.id',
+        'blog_tags.name',
+      ])
+      .getOne();
+    return {
+      data: categoryInfo,
+    };
+  }
 }

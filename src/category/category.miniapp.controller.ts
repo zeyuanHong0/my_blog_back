@@ -19,6 +19,6 @@ export class CategoryMiniAppController {
 
   @Get('getCategoryInfo/:id')
   findOne(@Param('id') id: string) {
-    return this.categoryService.getCategoryInfo(id);
+    return this.categoryService.getMiniAppCategoryInfo(id);
   }
 }
