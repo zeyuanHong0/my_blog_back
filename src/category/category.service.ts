@@ -1,16 +1,25 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
 
 import { Category } from '@/category/entities/category.entity';
+import { Tag } from '@/tag/entities/tag.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+
+type TagRow = {
+  tag_id: string;
+  tag_name: string;
+  blog_id: string;
+};
 
 @Injectable()
 export class CategoryService {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+    @InjectRepository(Tag)
+    private readonly tagRepository: Repository<Tag>,
   ) {}
 
   async create(createCategoryDto: CreateCategoryDto) {
@@ -106,7 +115,8 @@ export class CategoryService {
   }
 
   async getCategoryInfo(id: string) {
-    const categoryInfo = await this.categoryRepository
+    // 先查分类和 blogs
+    const category = await this.categoryRepository
       .createQueryBuilder('category')
       .leftJoinAndSelect(
         'category.blogs',
@@ -117,15 +127,6 @@ export class CategoryService {
           published: 1,
         },
       )
-      .leftJoinAndSelect(
-        'blogs.tags',
-        'blog_tags',
-        'blog_tags.is_delete = :is_delete',
-        {
-          is_delete: 0,
-        },
-      )
-      .leftJoinAndSelect('blogs.category', 'blog_category')
       .where('category.id = :id', { id })
       .select([
         'category.id',
@@ -135,14 +136,43 @@ export class CategoryService {
         'blogs.description',
         'blogs.createTime',
         'blogs.updateTime',
-        'blog_tags.id',
-        'blog_tags.icon',
-        'blog_tags.name',
-        'blog_category.name',
       ])
       .getOne();
+
+    if (!category) {
+      throw new NotFoundException('分类不存在');
+    }
+
+    if (!category?.blogs?.length) {
+      return {
+        data: category,
+      };
+    }
+    // 查询 tags
+    const blogIds = category.blogs.map((blog) => blog.id);
+    const tagRows = await this.tagRepository
+      .createQueryBuilder('tag')
+      .innerJoin('tag.blogs', 'blog', 'blog.id IN (:...blogIds)', { blogIds })
+      .where('tag.is_delete = :is_delete', { is_delete: 0 })
+      .select(['tag.id', 'tag.name', 'blog.id'])
+      .getRawMany<TagRow>();
+    // 组装 tags 数据结构
+    const blogTagMap = new Map<string, { id: string; name: string }[]>();
+    for (const row of tagRows) {
+      const list = blogTagMap.get(row.blog_id) ?? [];
+      list.push({
+        id: row.tag_id,
+        name: row.tag_name,
+      });
+      blogTagMap.set(row.blog_id, list);
+    }
+
+    for (const blog of category.blogs) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      (blog as any).tags = blogTagMap.get(blog.id) ?? [];
+    }
     return {
-      data: categoryInfo,
+      data: category,
     };
   }
 
@@ -183,7 +213,8 @@ export class CategoryService {
   }
 
   async getMiniAppCategoryInfo(id: string) {
-    const categoryInfo = await this.categoryRepository
+    // 先查分类和 blogs
+    const category = await this.categoryRepository
       .createQueryBuilder('category')
       .leftJoinAndSelect(
         'category.blogs',
@@ -194,15 +225,6 @@ export class CategoryService {
           published: 1,
         },
       )
-      .leftJoinAndSelect(
-        'blogs.tags',
-        'blog_tags',
-        'blog_tags.is_delete = :is_delete',
-        {
-          is_delete: 0,
-        },
-      )
-      .leftJoinAndSelect('blogs.category', 'blog_category')
       .where('category.id = :id', { id })
       .select([
         'category.id',
@@ -212,12 +234,44 @@ export class CategoryService {
         'blogs.description',
         'blogs.createTime',
         'blogs.updateTime',
-        'blog_tags.id',
-        'blog_tags.name',
       ])
       .getOne();
+
+    if (!category) {
+      throw new NotFoundException('分类不存在');
+    }
+
+    if (!category?.blogs?.length) {
+      return {
+        data: category,
+      };
+    }
+    // 查询 tags
+    const blogIds = category.blogs.map((blog) => blog.id);
+    const tagRows = await this.tagRepository
+      .createQueryBuilder('tag')
+      .innerJoin('tag.blogs', 'blog', 'blog.id IN (:...blogIds)', { blogIds })
+      .where('tag.is_delete = :is_delete', { is_delete: 0 })
+      .select(['tag.id', 'tag.name', 'blog.id'])
+      .getRawMany<TagRow>();
+    // 组装 tags 数据结构
+    const blogTagMap = new Map<string, { id: string; name: string }[]>();
+    for (const row of tagRows) {
+      const list = blogTagMap.get(row.blog_id) ?? [];
+      list.push({
+        id: row.tag_id,
+        name: row.tag_name,
+      });
+      blogTagMap.set(row.blog_id, list);
+    }
+
+    for (const blog of category.blogs) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      (blog as any).tags = blogTagMap.get(blog.id) ?? [];
+    }
+
     return {
-      data: categoryInfo,
+      data: category,
     };
   }
 }

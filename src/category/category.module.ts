@@ -6,9 +6,10 @@ import { CategoryController } from './category.controller';
 import { CategoryFrontController } from '@/category/category.front.controller';
 import { CategoryMiniAppController } from './category.miniapp.controller';
 import { Category } from '@/category/entities/category.entity';
+import { Tag } from '@/tag/entities/tag.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Category])],
+  imports: [TypeOrmModule.forFeature([Category, Tag])],
   controllers: [
     CategoryController,
     CategoryFrontController,
