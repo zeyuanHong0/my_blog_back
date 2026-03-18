@@ -157,4 +157,32 @@ export class TagService {
       data: tagList,
     };
   }
+
+  async getMiniAppTagInfo(id: string) {
+    const tagInfo = await this.tagRepository
+      .createQueryBuilder('tag')
+      .leftJoinAndSelect(
+        'tag.blogs',
+        'blogs',
+        'blogs.is_delete = :is_delete AND blogs.published = :published',
+        {
+          is_delete: 0,
+          published: 1,
+        },
+      )
+      .where('tag.id = :id', { id })
+      .select([
+        'tag.id',
+        'tag.name',
+        'blogs.id',
+        'blogs.title',
+        'blogs.description',
+        'blogs.createTime',
+        'blogs.updateTime',
+      ])
+      .getOne();
+    return {
+      data: tagInfo,
+    };
+  }
 }

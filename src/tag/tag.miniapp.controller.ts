@@ -20,6 +20,6 @@ export class TagMiniAppController {
 
   @Get('getTagInfo/:id')
   getTagInfo(@Param('id') id: string) {
-    return this.tagService.getTagInfo(id);
+    return this.tagService.getMiniAppTagInfo(id);
   }
 }
