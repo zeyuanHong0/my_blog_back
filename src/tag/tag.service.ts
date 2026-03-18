@@ -140,4 +140,21 @@ export class TagService {
       data: tagCount,
     };
   }
+
+  async getMiniAppAllTags() {
+    const tagList = await this.tagRepository
+      .createQueryBuilder('tag')
+      .leftJoin('tag.blogs', 'blogs')
+      .where('tag.is_delete = :is_delete', { is_delete: 0 })
+      .select(['tag.id', 'tag.name', 'tag.icon'])
+      .loadRelationCountAndMap('tag.blogCount', 'tag.blogs', 'blog', (qb) =>
+        qb
+          .where('blog.is_delete = :blog_is_delete', { blog_is_delete: 0 })
+          .andWhere('blog.published = :published', { published: 1 }),
+      )
+      .getMany();
+    return {
+      data: tagList,
+    };
+  }
 }

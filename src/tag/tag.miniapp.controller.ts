@@ -15,7 +15,7 @@ export class TagMiniAppController {
   // 获取所有标签列表 以及标签下的文章数量
   @Get('getAllTags')
   findAll() {
-    return this.tagService.getAllTags();
+    return this.tagService.getMiniAppAllTags();
   }
 
   @Get('getTagInfo/:id')
