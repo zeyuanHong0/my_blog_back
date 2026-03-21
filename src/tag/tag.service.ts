@@ -130,8 +130,6 @@ export class TagService {
     await this.tagRepository.update(id, { is_delete: 1 });
   }
 
-  //*********************************小程序相关***********************************
-
   async getTagCount() {
     const tagCount = await this.tagRepository.count({
       where: { is_delete: 0 },
@@ -140,6 +138,8 @@ export class TagService {
       data: tagCount,
     };
   }
+
+  //*********************************小程序相关***********************************
 
   async getMiniAppAllTags() {
     const tagList = await this.tagRepository

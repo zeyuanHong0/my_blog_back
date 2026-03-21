@@ -14,5 +14,6 @@ import { Category } from '@/category/entities/category.entity';
   imports: [TypeOrmModule.forFeature([Blog, Tag, User, Category]), AiModule],
   controllers: [BlogController, BlogFrontController, BlogMiniAppController],
   providers: [BlogService],
+  exports: [BlogService],
 })
 export class BlogModule {}

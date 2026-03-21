@@ -16,5 +16,6 @@ import { Tag } from '@/tag/entities/tag.entity';
     CategoryMiniAppController,
   ],
   providers: [CategoryService],
+  exports: [CategoryService],
 })
 export class CategoryModule {}

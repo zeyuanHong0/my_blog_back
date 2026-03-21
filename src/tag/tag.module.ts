@@ -11,5 +11,6 @@ import { TagMiniAppController } from './tag.miniapp.controller';
   imports: [TypeOrmModule.forFeature([Tag, Blog])],
   controllers: [TagController, TagFrontController, TagMiniAppController],
   providers: [TagService],
+  exports: [TagService],
 })
 export class TagModule {}

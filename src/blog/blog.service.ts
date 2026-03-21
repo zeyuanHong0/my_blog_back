@@ -305,6 +305,15 @@ export class BlogService {
     };
   }
 
+  async getBlogCount() {
+    const blogCount = await this.blogRepository.count({
+      where: { is_delete: 0, published: 1 },
+    });
+    return {
+      data: blogCount,
+    };
+  }
+
   // ********************************小程序相关************************************
 
   async getLatestBlogList(num: number) {
@@ -327,15 +336,6 @@ export class BlogService {
 
     return {
       data: blogList,
-    };
-  }
-
-  async getBlogCount() {
-    const blogCount = await this.blogRepository.count({
-      where: { is_delete: 0, published: 1 },
-    });
-    return {
-      data: blogCount,
     };
   }
 

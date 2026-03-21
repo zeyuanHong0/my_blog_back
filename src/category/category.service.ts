@@ -176,8 +176,6 @@ export class CategoryService {
     };
   }
 
-  //**************************************小程序相关************************************
-
   async getCategoryCount() {
     const categoryCount = await this.categoryRepository.count({
       where: {
@@ -188,6 +186,8 @@ export class CategoryService {
       data: categoryCount,
     };
   }
+
+  //**************************************小程序相关************************************
 
   async getMiniAppAllCategoryList() {
     const categoryList = await this.categoryRepository
