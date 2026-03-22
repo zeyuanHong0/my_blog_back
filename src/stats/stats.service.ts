@@ -12,12 +12,18 @@ export class StatsService {
   ) {}
 
   async getBlogStats() {
-    await Promise.all([
+    const [blogCount, tagCount, categoryCount] = await Promise.all([
       this.blogService.getBlogCount(),
       this.tagService.getTagCount(),
       this.categoryService.getCategoryCount(),
     ]);
 
-    return {};
+    return {
+      data: {
+        blogCount: blogCount.data,
+        tagCount: tagCount.data,
+        categoryCount: categoryCount.data,
+      },
+    };
   }
 }
