@@ -8,5 +8,6 @@ temp/
 files/
 logs/
 migrations/
+docs/
 .env
 .env.*
