@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 import { ConfigEnum } from '@/enum/config.enum';
+import { WxUser } from './entities/wx-user.entity';
 
 type WxLoginSuccess = {
   openid: string;
@@ -20,6 +23,8 @@ type WxLoginResponse = WxLoginSuccess | WxLoginError;
 @Injectable()
 export class MiniappService {
   constructor(
+    @InjectRepository(WxUser)
+    private readonly wxUserRepository: Repository<WxUser>,
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
   ) {}
