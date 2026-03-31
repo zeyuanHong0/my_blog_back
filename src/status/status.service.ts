@@ -28,4 +28,20 @@ export class StatusService {
       message: '更新状态成功',
     };
   }
+
+  // 获取状态
+  async getStatus() {
+    const status = await this.statusRepository.findOne({
+      where: {},
+      order: {
+        id: 'ASC',
+      },
+      select: ['is_online', 'status_text', 'status_desc'],
+    });
+    return {
+      data: {
+        ...status,
+      },
+    };
+  }
 }

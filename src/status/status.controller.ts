@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
 import { StatusService } from './status.service';
 
 import { UpdateStatusDto } from './dto/update-status.dto';
@@ -11,5 +11,10 @@ export class StatusController {
   @HttpCode(200)
   updateStatus(@Body() data: UpdateStatusDto) {
     return this.statusService.updateStatus(data);
+  }
+
+  @Get('getStatus')
+  getStatus() {
+    return this.statusService.getStatus();
   }
 }
