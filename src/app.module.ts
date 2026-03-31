@@ -23,6 +23,7 @@ import { CategoryModule } from './category/category.module';
 import { AiModule } from './ai/ai.module';
 import { StatsModule } from './stats/stats.module';
 import { MiniappModule } from './miniapp/miniapp.module';
+import { StatusModule } from './status/status.module';
 
 // console.log('NODE_ENV:', process.env.NODE_ENV);
 const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
@@ -108,6 +109,7 @@ const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
     AiModule,
     StatsModule,
     MiniappModule,
+    StatusModule,
   ],
   controllers: [AppController],
   providers: [AppService],

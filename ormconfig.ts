@@ -13,6 +13,7 @@ import { File } from '@/upload/entities/upload.entity';
 import { EmailCode } from '@/auth/entities/email-code.entity';
 import { Category } from '@/category/entities/category.entity';
 import { WxUser } from '@/miniapp/entities/wx-user.entity';
+import { Status } from '@/status/entities/status.entity';
 
 // 通过环境变量读取不同的.env文件
 function getEnv(env: string): Record<string, any> {
@@ -35,7 +36,17 @@ function buildConnectionOptions(): TypeOrmModuleOptions {
     username: env[ConfigEnum.DB_USERNAME],
     password: env[ConfigEnum.DB_PASSWORD],
     database: env[ConfigEnum.DB_NAME],
-    entities: [User, UserOauth, Blog, Tag, File, EmailCode, Category, WxUser],
+    entities: [
+      User,
+      UserOauth,
+      Blog,
+      Tag,
+      File,
+      EmailCode,
+      Category,
+      WxUser,
+      Status,
+    ],
     synchronize: false, // 注意:在生产环境中不要使用 synchronize: true
     migrations: [
       process.env.NODE_ENV === 'production'

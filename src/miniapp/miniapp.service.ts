@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+
 import { ConfigEnum } from '@/enum/config.enum';
 import { WxUser } from './entities/wx-user.entity';
 
@@ -27,6 +29,7 @@ export class MiniappService {
     private readonly wxUserRepository: Repository<WxUser>,
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
+    private readonly jwtService: JwtService,
   ) {}
 
   // 微信登录
@@ -52,10 +55,25 @@ export class MiniappService {
       throw new Error(`微信登录失败: ${data.errmsg}`);
     }
 
+    const openid = data.openid;
+    let wxUser = await this.wxUserRepository.findOne({
+      where: { openid: openid, is_delete: 0 },
+    });
+    if (!wxUser) {
+      wxUser = await this.wxUserRepository.save({
+        openid,
+      });
+    }
+    const token = this.jwtService.sign({
+      id: wxUser.id,
+      openid: wxUser.openid,
+      loginType: 'miniapp',
+    });
+
     return {
       message: '成功',
       data: {
-        openid: data.openid,
+        token,
       },
     };
   }
