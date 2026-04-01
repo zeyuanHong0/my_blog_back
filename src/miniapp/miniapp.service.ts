@@ -77,4 +77,16 @@ export class MiniappService {
       },
     };
   }
+
+  // 判断用户是不是 admin
+  isUserAdmin(openid: string) {
+    const adminOpenid = this.configService.get<string>(
+      ConfigEnum.MINIAPP_OWNER_OPENID,
+    );
+    return {
+      data: {
+        isAdmin: openid === adminOpenid,
+      },
+    };
+  }
 }
