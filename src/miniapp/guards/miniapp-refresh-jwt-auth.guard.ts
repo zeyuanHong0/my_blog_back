@@ -1,29 +1,31 @@
 import {
-  Injectable,
-  UnauthorizedException,
   HttpException,
   HttpStatus,
+  Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { JsonWebTokenError, TokenExpiredError } from '@nestjs/jwt';
-import { MiniappJwtPayload } from '@/miniapp/types/miniapp-jwt-payload.type';
+import { MiniappRefreshJwtPayload } from '@/miniapp/types/miniapp-refresh-jwt-paylod.type';
 
 @Injectable()
-export class MiniappJwtAuthGuard extends AuthGuard('miniapp-jwt') {
-  handleRequest<TUser = MiniappJwtPayload>(
+export class MiniappRefreshJwtAuthGuard extends AuthGuard(
+  'miniapp-refresh-jwt',
+) {
+  handleRequest<TUser = MiniappRefreshJwtPayload>(
     err: any,
     user: TUser,
     info: any,
   ): TUser {
     if (info instanceof TokenExpiredError) {
       throw new HttpException(
-        { code: 401001, message: 'token已过期' },
+        { code: 401003, message: 'refresh_token已过期，重新登录' },
         HttpStatus.UNAUTHORIZED,
       );
     }
     if (info instanceof JsonWebTokenError) {
       throw new HttpException(
-        { code: 401002, message: 'token无效' },
+        { code: 401004, message: 'refresh_token无效，重新登录' },
         HttpStatus.UNAUTHORIZED,
       );
     }

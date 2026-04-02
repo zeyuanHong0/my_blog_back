@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
@@ -64,16 +64,46 @@ export class MiniappService {
         openid,
       });
     }
-    const token = this.jwtService.sign({
+    // access_token
+    const access_token = this.jwtService.sign({
       id: wxUser.id,
       openid: wxUser.openid,
       loginType: 'miniapp',
     });
-
+    // refresh_token
+    const refresh_token = this.jwtService.sign(
+      {
+        id: wxUser.id,
+        openid: wxUser.openid,
+        loginType: 'miniapp',
+        type: 'refresh',
+      },
+      { expiresIn: '30d' },
+    );
     return {
       message: '成功',
       data: {
-        token,
+        access_token,
+        refresh_token,
+      },
+    };
+  }
+
+  async refresh(id: string) {
+    const wxUser = await this.wxUserRepository.findOne({
+      where: { id, is_delete: 0 },
+    });
+    if (!wxUser) {
+      throw new UnauthorizedException('用户不存在');
+    }
+    const access_token = this.jwtService.sign({
+      id: wxUser.id,
+      openid: wxUser.openid,
+      loginType: 'miniapp',
+    });
+    return {
+      data: {
+        access_token,
       },
     };
   }

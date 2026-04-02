@@ -9,8 +9,13 @@ import {
 import { MiniappService } from './miniapp.service';
 import { LoginMiniappDto } from './dto/login-miniapp.dto';
 import { MiniappJwtAuthGuard } from '@/miniapp/guards/miniapp-jwt-auth.guard';
-import { CurrentWxUser } from '@/common/decorators/current-user.decorator';
-import { type MiniappJwtPayload } from '@/miniapp/types/miniapp-jwt-payload.type';
+import {
+  CurrentRefreshWxUser,
+  CurrentWxUser,
+} from '@/common/decorators/current-user.decorator';
+import type { MiniappJwtPayload } from '@/miniapp/types/miniapp-jwt-payload.type';
+import type { MiniappRefreshJwtPayload } from '@/miniapp/types/miniapp-refresh-jwt-paylod.type';
+import { MiniappRefreshJwtAuthGuard } from '@/miniapp/guards/miniapp-refresh-jwt-auth.guard';
 
 @Controller('miniapp')
 export class MiniappController {
@@ -26,5 +31,12 @@ export class MiniappController {
   @UseGuards(MiniappJwtAuthGuard)
   isUserAdmin(@CurrentWxUser() user: MiniappJwtPayload) {
     return this.miniappService.isUserAdmin(user.openid);
+  }
+
+  @Post('refresh')
+  @HttpCode(200)
+  @UseGuards(MiniappRefreshJwtAuthGuard)
+  refreshToken(@CurrentRefreshWxUser() user: MiniappRefreshJwtPayload) {
+    return this.miniappService.refresh(user.id);
   }
 }

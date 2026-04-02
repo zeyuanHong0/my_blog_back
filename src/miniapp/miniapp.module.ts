@@ -10,6 +10,7 @@ import { MiniappController } from './miniapp.controller';
 import { WxUser } from '@/miniapp/entities/wx-user.entity';
 import { ConfigEnum } from '@/enum/config.enum';
 import { MiniappJwtStrategy } from './miniapp-jwt.strategy';
+import { MiniappRefreshJwtStrategy } from './miniapp-refresh-jwt.strategy';
 
 @Module({
   imports: [
@@ -26,6 +27,6 @@ import { MiniappJwtStrategy } from './miniapp-jwt.strategy';
     }),
   ],
   controllers: [MiniappController],
-  providers: [MiniappService, MiniappJwtStrategy],
+  providers: [MiniappService, MiniappJwtStrategy, MiniappRefreshJwtStrategy],
 })
 export class MiniappModule {}

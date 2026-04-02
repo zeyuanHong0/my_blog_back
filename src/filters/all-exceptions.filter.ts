@@ -21,7 +21,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Internal server error';
-
+    let code = status;
     // 处理 token 过期或无效
     if (exception instanceof UnauthorizedException) {
       status = HttpStatus.UNAUTHORIZED;
@@ -30,6 +30,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         message = res;
       } else if (typeof res === 'object' && res !== null) {
         const r = res as Record<string, unknown>;
+        code = (r.code as number) || status;
         message = (r.message as string) || '身份验证失败';
       }
 
@@ -57,6 +58,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         message = res;
       } else if (typeof res === 'object' && res !== null) {
         const r = res as Record<string, unknown>;
+        code = (r.code as number) || status;
         if (Array.isArray(r.message)) {
           message = r.message.join('; ');
         } else {
@@ -88,7 +90,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     }
 
     response.status(status).json({
-      code: status,
+      code: code,
       path: request.url,
       timestamp: new Date().toISOString(),
       message,
