@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
 import cookieParser from 'cookie-parser';
+import { WsAdapter } from '@nestjs/platform-ws';
 
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './filters/all-exceptions.filter';
@@ -25,6 +26,7 @@ async function bootstrap() {
       whitelist: true, // 自动去除非 DTO 定义的属性
     }),
   );
+  app.useWebSocketAdapter(new WsAdapter(app)); // 使用 WebSocket 适配器
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
