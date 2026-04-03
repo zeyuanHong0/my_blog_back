@@ -22,7 +22,7 @@ import { MiniappRefreshJwtStrategy } from './miniapp-refresh-jwt.strategy';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>(ConfigEnum.JWT_SECRET),
-        signOptions: { expiresIn: '86400' },
+        signOptions: { expiresIn: '1d' },
       }),
     }),
   ],
