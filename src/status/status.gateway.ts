@@ -1,25 +1,59 @@
+import { OnModuleDestroy } from '@nestjs/common';
 import {
   WebSocketGateway,
   WebSocketServer,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  OnGatewayInit,
 } from '@nestjs/websockets';
 import WebSocket, { Server } from 'ws';
+
+const HEARTBEAT_INTERVAL = 30000;
 
 @WebSocketGateway({
   // 原生 ws 不支持 namespace，只能通过不同端口区分，或者在业务层自己处理
   // 如果需要和 HTTP 服务共用端口，这里不填 port 即可
 })
-export class StatusGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class StatusGateway
+  implements
+    OnGatewayConnection,
+    OnGatewayDisconnect,
+    OnGatewayInit,
+    OnModuleDestroy
+{
   @WebSocketServer()
-  server: Server; // 原生 ws 的 Server 类型
+  server!: Server; // 原生 ws 的 Server 类型
+
+  private heartbeatInterval!: NodeJS.Timeout;
+  private aliveClients = new WeakMap<WebSocket, boolean>();
+
+  afterInit(server: Server) {
+    this.heartbeatInterval = setInterval(() => {
+      server.clients.forEach((client) => {
+        if (!this.aliveClients.get(client)) {
+          client.terminate();
+          return;
+        }
+        this.aliveClients.set(client, false);
+        client.ping();
+      });
+    }, HEARTBEAT_INTERVAL);
+  }
 
   handleConnection(client: WebSocket) {
     console.log('Client connected');
+    this.aliveClients.set(client, true);
+    client.on('pong', () => {
+      this.aliveClients.set(client, true);
+    });
   }
 
   handleDisconnect(client: WebSocket) {
     console.log('Client disconnected');
+  }
+
+  onModuleDestroy() {
+    clearInterval(this.heartbeatInterval);
   }
 
   broadcastStatus<T>(event: string, payload: T) {
