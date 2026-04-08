@@ -13,6 +13,7 @@ const HEARTBEAT_INTERVAL = 30000;
 @WebSocketGateway({
   // 原生 ws 不支持 namespace，只能通过不同端口区分，或者在业务层自己处理
   // 如果需要和 HTTP 服务共用端口，这里不填 port 即可
+  path: '/ws',
 })
 export class StatusGateway
   implements
