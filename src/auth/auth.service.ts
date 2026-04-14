@@ -295,7 +295,9 @@ export class AuthService {
    * 用code换取github access_token
    */
   async getGithubAccessToken(code: string) {
-    const requestConfig = getAxiosConfig(this.configService);
+    const requestConfig = getAxiosConfig(this.configService, {
+      'User-Agent': 'zlyhub-app',
+    });
     const res: any = await firstValueFrom(
       this.httpService.post(
         'https://github.com/login/oauth/access_token',
@@ -318,6 +320,7 @@ export class AuthService {
   async getGithubUserInfo(accessToken: string) {
     const requestConfig = getAxiosConfig(this.configService, {
       Authorization: `Bearer ${accessToken}`,
+      'User-Agent': 'zlyhub-app',
     });
     const res: any = await firstValueFrom(
       this.httpService.get('https://api.github.com/user', requestConfig),
@@ -332,6 +335,7 @@ export class AuthService {
   async getGithubUserEmail(accessToken: string) {
     const requestConfig = getAxiosConfig(this.configService, {
       Authorization: `Bearer ${accessToken}`,
+      'User-Agent': 'zlyhub-app',
     });
     const res: any = await firstValueFrom(
       this.httpService.get('https://api.github.com/user/emails', requestConfig),
