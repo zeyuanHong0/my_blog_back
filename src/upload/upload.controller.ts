@@ -3,6 +3,7 @@ import {
   Post,
   Req,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -13,8 +14,13 @@ import type { Request } from 'express';
 import { getFileName } from '@/utils';
 import { UploadService } from './upload.service';
 import { CosService } from '@/cos/cos.service';
+import { Role } from '@/enum/role.enum';
+import { Roles } from '@/common/decorators/roles.decorator';
+import { JwtAuthGuard, RolesGuard } from '@/auth/guards';
 
 @Controller('upload')
+@Roles(Role.ADMIN)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class UploadController {
   constructor(
     private readonly uploadService: UploadService,
