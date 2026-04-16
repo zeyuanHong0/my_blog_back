@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
@@ -122,5 +122,36 @@ export class UserService {
 
   async delete(id: string) {
     await this.userRepository.update(id, { is_delete: 1 });
+  }
+
+  async getUserList(name: string, pageNum: number, pageSize: number) {
+    const where = name
+      ? [{ username: Like(`%${name}%`) }, { email: Like(`%${name}%`) }]
+      : undefined;
+    const [userList, total] = await this.userRepository.findAndCount({
+      where,
+      select: [
+        'id',
+        'username',
+        'email',
+        'createTime',
+        'updateTime',
+        'is_delete',
+      ],
+      skip: (pageNum - 1) * pageSize,
+      take: pageSize,
+      order: {
+        createTime: 'DESC',
+        id: 'DESC',
+      },
+    });
+    return {
+      data: {
+        list: userList,
+        total,
+        pageNum: Number(pageNum),
+        pageSize: Number(pageSize),
+      },
+    };
   }
 }
