@@ -18,8 +18,8 @@ import { Roles } from '@/common/decorators/roles.decorator';
 import { Role } from '@/enum/role.enum';
 import { RolesGuard } from '@/auth/guards';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('admin/user')
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.ADMIN)
 export class UserAdminController {
   constructor(private readonly userService: UserService) {}
@@ -46,5 +46,10 @@ export class UserAdminController {
     @Query('pageSize', ParseIntPipe) pageSize: number,
   ) {
     return this.userService.getUserList(name, pageNum, pageSize);
+  }
+
+  @Post('changeUserStatus')
+  changeUserStatus(@Body() data: { id: string; status: 0 | 1 }) {
+    return this.userService.changeUserStatus(data.id, data.status);
   }
 }

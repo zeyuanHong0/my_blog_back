@@ -1,4 +1,4 @@
-import { Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
@@ -10,11 +10,15 @@ import { UserService } from './user.service';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post('addUser')
-
   // 获取当前用户信息
   @Get('/profile')
   getProfile(@CurrentUser() user: JwtPayload) {
     return this.userService.getProfile(user.id);
+  }
+
+  // 判断用户是否是管理员
+  @Get('/isAdmin')
+  isAdmin(@CurrentUser() user: JwtPayload) {
+    return this.userService.isAdmin(user.id);
   }
 }

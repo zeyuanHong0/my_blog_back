@@ -6,6 +6,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import { UserOauth } from '@/user/entities/user-oauth.entity';
 import { OAuthProvider } from '@/enum/oauth-provider.enum';
+import { Role } from '@/enum/role.enum';
 
 @Injectable()
 export class UserService {
@@ -151,6 +152,26 @@ export class UserService {
         total,
         pageNum: Number(pageNum),
         pageSize: Number(pageSize),
+      },
+    };
+  }
+
+  async changeUserStatus(id: string, status: 0 | 1) {
+    await this.userRepository.update(id, { is_delete: status });
+    return {
+      message: '操作成功',
+    };
+  }
+
+  async isAdmin(id: string) {
+    const user = await this.userRepository.findOne({
+      where: {
+        id,
+      },
+    });
+    return {
+      data: {
+        isAdmin: user?.accountType === Role.ADMIN,
       },
     };
   }
