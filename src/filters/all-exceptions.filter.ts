@@ -91,7 +91,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     response.status(status).json({
       code: code,
-      path: request.url,
+      // path: request.url,
       timestamp: new Date().toISOString(),
       message,
     });
