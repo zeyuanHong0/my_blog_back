@@ -7,6 +7,7 @@ import { User } from './entities/user.entity';
 import { UserOauth } from '@/user/entities/user-oauth.entity';
 import { OAuthProvider } from '@/enum/oauth-provider.enum';
 import { Role } from '@/enum/role.enum';
+import { UpdateUserDto } from '@/user/dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -23,6 +24,10 @@ export class UserService {
     const user = this.userRepository.create({ username, password, email });
     const savedUser = await this.userRepository.save(user);
     return savedUser;
+  }
+
+  async update(id: string, updateUserDto: Omit<UpdateUserDto, 'id'>) {
+    await this.userRepository.update(id, updateUserDto);
   }
 
   async createOauthUser(
@@ -105,6 +110,7 @@ export class UserService {
       where: {
         email,
       },
+      relations: ['userOauths'],
     });
   }
 

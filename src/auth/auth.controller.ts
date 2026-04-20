@@ -33,6 +33,11 @@ export class AuthController {
     return this.authService.signout(res);
   }
 
+  @Post('/checkEmail')
+  checkEmailBeforeRegister(@Body('email') email: string) {
+    return this.authService.checkEmailBeforeRegister(email);
+  }
+
   @Post('sendCode')
   sendCode(@Body('email') email: string) {
     return this.authService.sendCode(email);

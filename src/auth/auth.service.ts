@@ -23,6 +23,7 @@ import { ConfigEnum } from '@/enum/config.enum';
 import { OAuthProvider } from '@/enum/oauth-provider.enum';
 import type { GithubUser, GithubEmail } from './types/github-user.type';
 import { getAxiosConfig } from '@/utils';
+import { JwtPayload } from '@/auth/types/jwt-payload.type';
 
 @Injectable()
 export class AuthService {
@@ -41,19 +42,38 @@ export class AuthService {
     return Math.floor(100000 + Math.random() * 900000).toString();
   }
 
-  // 发送验证码
-  async sendCode(email: string) {
+  // 检查邮箱
+  async checkEmailBeforeRegister(email: string) {
     // 校验邮箱格式
     const reg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!reg.test(email)) {
       throw new BadRequestException('邮箱格式不正确');
     }
     // 检查邮箱是否已存在
-    const existingEmail = await this.userService.findUserByEmail(email);
-    if (existingEmail) {
+    const user = await this.userService.findUserByEmail(email);
+    if (user) {
+      // 如果用户没有密码，说明是第三方登录的
+      if (!user.password) {
+        const provider = user.userOauths[0].provider;
+        return {
+          data: {
+            needSetPassword: true,
+          },
+          message: `该邮箱已通过${provider ? provider : '第三方'}登录，继续注册将为账号设置密码`,
+        };
+      }
       throw new ConflictException('邮箱已存在');
     }
+    return {
+      data: {
+        needSetPassword: false,
+      },
+      message: '邮箱可用',
+    };
+  }
 
+  // 发送验证码
+  async sendCode(email: string) {
     const last = await this.emailCodeRepository.findOne({
       where: { email },
       order: { createdTime: 'DESC' },
@@ -164,16 +184,16 @@ export class AuthService {
   async signup(data: SignupUserDto, res: Response) {
     const { username, password, email, emailCode } = data;
 
-    // 检查用户是否已存在
-    const existingUser = await this.userService.findOne(username);
-    if (existingUser) {
-      throw new ConflictException('用户名已存在');
+    // 检查邮箱是否已存在
+    const existingEmailUser = await this.userService.findUserByEmail(email);
+    if (existingEmailUser && existingEmailUser.password) {
+      throw new ConflictException('邮箱已存在');
     }
 
-    // 检查邮箱是否已存在
-    const existingEmail = await this.userService.findUserByEmail(email);
-    if (existingEmail) {
-      throw new ConflictException('邮箱已存在');
+    // 检查用户名是否已存在（合并场景下允许使用 OAuth 用户自己原有的用户名）
+    const existingUser = await this.userService.findOne(username);
+    if (existingUser && existingUser.id !== existingEmailUser?.id) {
+      throw new ConflictException('用户名已存在');
     }
 
     // 校验邮箱验证码
@@ -181,14 +201,24 @@ export class AuthService {
 
     // 加密密码
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await this.userService.create({
-      username,
-      password: hashedPassword,
-      email,
-    });
+    let payload: JwtPayload;
+    if (existingEmailUser && !existingEmailUser.password) {
+      // 合并 OAuth 账号：同步更新用户名和密码
+      await this.userService.update(existingEmailUser.id, {
+        username,
+        password: hashedPassword,
+      });
+      payload = { username, id: existingEmailUser.id };
+    } else {
+      const newUser = await this.userService.create({
+        username,
+        password: hashedPassword,
+        email,
+      });
+      payload = { username: newUser.username, id: newUser.id };
+    }
 
     // 注册成功后自动登录,生成 JWT token
-    const payload = { username: newUser.username, id: newUser.id };
     const token = this.jwtService.sign(payload);
 
     // 设置 cookie
@@ -249,7 +279,7 @@ export class AuthService {
     const githubUserInfo: GithubUser =
       await this.getGithubUserInfo(accessToken);
     let email: string | null = githubUserInfo.email;
-    if (!githubUserInfo.email) {
+    if (!email) {
       // 获取用户邮箱
       const emailList: GithubEmail[] =
         await this.getGithubUserEmail(accessToken);
@@ -267,7 +297,7 @@ export class AuthService {
       // 用户不存在，创建新用户
       user = await this.userService.createOauthUser(
         githubUserInfo.name,
-        email!,
+        email,
         OAuthProvider.GITHUB,
         githubUserInfo.id,
       );
