@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Put, Res, UseGuards } from '@nestjs/common';
+import type { Response } from 'express';
 
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
@@ -24,11 +25,21 @@ export class UserController {
 
   // 修改用户信息
   @Put('/update/Profile')
-  update(
+  async update(
     @CurrentUser() user: JwtPayload,
     @Body()
     data: { username?: string; password?: string; confirmPassword?: string },
+    @Res({ passthrough: true }) res: Response,
   ) {
-    return this.userService.updateProfile(user.id, data);
+    const result = await this.userService.updateProfile(user.id, data);
+    // 用户名或密码变更后清除 cookie
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      path: '/',
+      domain: '',
+    });
+    return result;
   }
 }

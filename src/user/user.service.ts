@@ -194,7 +194,7 @@ export class UserService {
     const { username, password, confirmPassword } = data;
     const user = await this.findUserById(id);
     if (!user) throw new Error('用户不存在');
-    if (username) {
+    if (username && username !== user.username) {
       const findUserName = await this.findOne(username);
       if (findUserName) throw new Error('用户名已存在');
     }
