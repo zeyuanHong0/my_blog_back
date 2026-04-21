@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
@@ -179,6 +180,33 @@ export class UserService {
       data: {
         isAdmin: user?.accountType === Role.ADMIN,
       },
+    };
+  }
+
+  async updateProfile(
+    id: string,
+    data: {
+      username?: string;
+      password?: string;
+      confirmPassword?: string;
+    },
+  ) {
+    const { username, password, confirmPassword } = data;
+    const user = await this.findUserById(id);
+    if (!user) throw new Error('用户不存在');
+    if (username) {
+      const findUserName = await this.findOne(username);
+      if (findUserName) throw new Error('用户名已存在');
+    }
+    if (password && password !== confirmPassword) {
+      throw new Error('两次输入的密码不一致');
+    }
+    const updateData: Record<string, string> = {};
+    if (username) updateData.username = username;
+    if (password) updateData.password = await bcrypt.hash(password, 10);
+    await this.userRepository.update(id, updateData);
+    return {
+      message: '更新信息成功',
     };
   }
 }
