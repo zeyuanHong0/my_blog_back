@@ -175,9 +175,6 @@ export class AuthService {
 
     return {
       message: '登录成功',
-      data: {
-        token,
-      },
     };
   }
 
@@ -246,7 +243,7 @@ export class AuthService {
       domain: '',
     });
     return {
-      msg: '登出成功',
+      message: '登出成功',
     };
   }
 
