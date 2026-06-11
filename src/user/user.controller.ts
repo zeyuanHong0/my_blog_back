@@ -33,12 +33,11 @@ export class UserController {
   ) {
     const result = await this.userService.updateProfile(user.id, data);
     // 用户名或密码变更后清除 cookie
-    res.clearCookie('token', {
+    res.clearCookie('blog_token', {
       httpOnly: true,
       secure: false,
       sameSite: 'lax',
       path: '/',
-      domain: '',
     });
     return result;
   }

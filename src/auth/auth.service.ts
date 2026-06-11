@@ -164,12 +164,11 @@ export class AuthService {
     const token = this.jwtService.sign(payload);
 
     // 设置 cookie
-    res.cookie('token', token, {
+    res.cookie('blog_token', token, {
       httpOnly: true, // 防止 XSS 攻击
       secure: false, // 如果没有 HTTPS，设为 false
       sameSite: 'lax', // 允许同站导航携带 Cookie
       path: '/', // 确保在所有路径下都可用
-      domain: '', // 明确设置为当前域名
       maxAge: 24 * 60 * 60 * 1000, // 1天
     });
 
@@ -219,12 +218,11 @@ export class AuthService {
     const token = this.jwtService.sign(payload);
 
     // 设置 cookie
-    res.cookie('token', token, {
+    res.cookie('blog_token', token, {
       httpOnly: true,
       secure: false,
       sameSite: 'lax',
       path: '/',
-      domain: '',
       maxAge: 24 * 60 * 60 * 1000,
     });
 
@@ -235,12 +233,11 @@ export class AuthService {
 
   signout(res: Response) {
     // 清除 cookie
-    res.clearCookie('token', {
+    res.clearCookie('blog_token', {
       httpOnly: true,
       secure: false,
       sameSite: 'lax',
       path: '/',
-      domain: '',
     });
     return {
       message: '登出成功',
@@ -304,12 +301,11 @@ export class AuthService {
     const token = this.jwtService.sign(payload);
 
     // 设置 cookie
-    res.cookie('token', token, {
+    res.cookie('blog_token', token, {
       httpOnly: true,
       secure: false,
       sameSite: 'lax',
       path: '/',
-      domain: '',
       maxAge: 24 * 60 * 60 * 1000,
     });
     // 重定向到前端成功页面
