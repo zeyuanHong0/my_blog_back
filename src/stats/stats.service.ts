@@ -13,7 +13,7 @@ export class StatsService {
 
   async getBlogStats() {
     const [blogCount, tagCount, categoryCount] = await Promise.all([
-      this.blogService.getBlogCount(),
+      this.blogService.getPublishedBlogCount(),
       this.tagService.getTagCount(),
       this.categoryService.getCategoryCount(),
     ]);
@@ -26,4 +26,6 @@ export class StatsService {
       },
     };
   }
+
+  async getDashboardStats() {}
 }

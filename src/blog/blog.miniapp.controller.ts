@@ -12,10 +12,10 @@ export class BlogMiniAppController {
     return this.blogService.getLatestBlogList(num);
   }
 
-  // 获取目前的所有博客数量
+  // 获取目前发布的所有博客数量
   @Get('getBlogCount')
   getBlogCount() {
-    return this.blogService.getBlogCount();
+    return this.blogService.getPublishedBlogCount();
   }
 
   // 获取所有博客

@@ -8,6 +8,7 @@ import { Tag } from '@/tag/entities/tag.entity';
 import { User } from '@/user/entities/user.entity';
 import { Category } from '@/category/entities/category.entity';
 import { AiService } from '@/ai/ai.service';
+import dayjs from '@/common/dayjs.config';
 
 @Injectable()
 export class BlogService {
@@ -305,12 +306,62 @@ export class BlogService {
     };
   }
 
-  async getBlogCount() {
+  // 获取已发布博客数量
+  async getPublishedBlogCount() {
     const blogCount = await this.blogRepository.count({
       where: { is_delete: 0, published: 1 },
     });
     return {
       data: blogCount,
+    };
+  }
+
+  // 获取博客总数
+  async getAllBlogCount() {
+    const blogCount = await this.blogRepository.count({
+      where: { is_delete: 0 },
+    });
+    return {
+      data: blogCount,
+    };
+  }
+
+  // 获取本周新增文章数（与上周环比）
+  async getWeeklyAddedBlogCount() {
+    const currentWeekStart = dayjs().startOf('isoWeek').startOf('day');
+    const currentWeekEnd = currentWeekStart.add(1, 'week');
+    const lastWeekStart = currentWeekStart.subtract(1, 'week');
+    const countBlogsByRange = (start: Date, end: Date) =>
+      this.blogRepository
+        .createQueryBuilder('blog')
+        .where('blog.is_delete = :isDelete', { isDelete: 0 })
+        .andWhere('blog.published = :published', { published: 1 })
+        .andWhere('blog.createTime >= :start')
+        .andWhere('blog.createTime < :end')
+        .setParameters({ start, end })
+        .getCount();
+
+    const [currentWeekBlogCount, lastWeekBlogCount] = await Promise.all([
+      countBlogsByRange(currentWeekStart.toDate(), currentWeekEnd.toDate()),
+      countBlogsByRange(lastWeekStart.toDate(), currentWeekStart.toDate()),
+    ]);
+
+    const growthRate =
+      lastWeekBlogCount === 0
+        ? null
+        : Number(
+            (
+              ((currentWeekBlogCount - lastWeekBlogCount) / lastWeekBlogCount) *
+              100
+            ).toFixed(2),
+          );
+
+    return {
+      data: {
+        currentWeekBlogCount,
+        lastWeekBlogCount,
+        growthRate,
+      },
     };
   }
 
