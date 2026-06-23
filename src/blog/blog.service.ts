@@ -365,6 +365,44 @@ export class BlogService {
     };
   }
 
+  // 近 7 天的发文趋势
+  async getLast7DaysBlogPublishTrend() {
+    const start = dayjs().subtract(6, 'day').startOf('day');
+    const end = dayjs().endOf('day');
+    const trendRaw = await this.blogRepository
+      .createQueryBuilder('blog')
+      .where('blog.is_delete = :isDelete', { isDelete: 0 })
+      .andWhere('blog.published = :published', { published: 1 })
+      .andWhere('blog.createTime BETWEEN :start AND :end', {
+        start: start.toDate(),
+        end: end.toDate(),
+      })
+      .select("DATE_FORMAT(blog.createTime, '%Y-%m-%d')", 'date')
+      .addSelect('COUNT(*)', 'count')
+      .groupBy("DATE_FORMAT(blog.createTime, '%Y-%m-%d')")
+      .orderBy('date', 'ASC')
+      .getRawMany<{ date: string; count: string }>();
+
+    const trendMap = new Map<string, number>(
+      trendRaw.map((item) => [item.date, Number(item.count)]),
+    );
+    const trend = Array.from({ length: 7 }, (_, index) => {
+      const date = start.add(index, 'day').format('YYYY-MM-DD');
+      return {
+        date,
+        count: trendMap.get(date) ?? 0,
+      };
+    });
+    const trendData = {
+      dateList: trend.map((item) => item.date),
+      data: trend.map((item) => item.count),
+    };
+
+    return {
+      data: trendData,
+    };
+  }
+
   // ********************************小程序相关************************************
 
   async getLatestBlogList(num: number) {

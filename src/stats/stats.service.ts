@@ -27,5 +27,31 @@ export class StatsService {
     };
   }
 
-  async getDashboardStats() {}
+  async getDashboardStats() {
+    const [
+      allBlogCount,
+      publishedBlogCount,
+      tagCount,
+      categoryCount,
+      weeklyAddedBlogCount,
+      blogPublishTrend,
+    ] = await Promise.all([
+      this.blogService.getAllBlogCount(),
+      this.blogService.getPublishedBlogCount(),
+      this.tagService.getTagCount(),
+      this.categoryService.getCategoryCount(),
+      this.blogService.getWeeklyAddedBlogCount(),
+      this.blogService.getLast7DaysBlogPublishTrend(),
+    ]);
+    return {
+      data: {
+        allBlogCount: allBlogCount.data,
+        publishedBlogCount: publishedBlogCount.data,
+        tagCount: tagCount.data,
+        categoryCount: categoryCount.data,
+        weeklyAddedBlogCount: weeklyAddedBlogCount.data,
+        blogPublishTrend: blogPublishTrend.data,
+      },
+    };
+  }
 }
