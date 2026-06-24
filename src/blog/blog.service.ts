@@ -403,6 +403,57 @@ export class BlogService {
     };
   }
 
+  // 分类占比
+  async getCategoryDistribution() {
+    const raw = await this.blogRepository
+      .createQueryBuilder('blog')
+      .leftJoinAndSelect('blog.category', 'category')
+      .where('blog.is_delete = :isDelete', { isDelete: 0 })
+      .andWhere('blog.published = :published', { published: 1 })
+      .select('category.name', 'categoryName')
+      .addSelect('COUNT(blog.id)', 'count')
+      .groupBy('category.id')
+      .addGroupBy('category.name')
+      .getRawMany<{ categoryName: string; count: string }>();
+
+    const categoryData = raw.map((item) => {
+      return {
+        name: item.categoryName,
+        value: Number(item.count),
+      };
+    });
+    return {
+      data: categoryData,
+    };
+  }
+
+  // 标签top5
+  async getTop5Tags() {
+    const raw = await this.blogRepository
+      .createQueryBuilder('blog')
+      .leftJoinAndSelect('blog.tags', 'tags')
+      .where('blog.is_delete = :isDelete', { isDelete: 0 })
+      .andWhere('blog.published = :published', { published: 1 })
+      .select('tags.name', 'tagName')
+      .addSelect('COUNT(blog.id)', 'count')
+      .groupBy('tags.id')
+      .addGroupBy('tags.name')
+      .orderBy('count', 'DESC')
+      .addOrderBy('tags.name', 'ASC')
+      .limit(5)
+      .getRawMany<{ tagName: string; count: string }>();
+
+    const tagData = raw.map((item) => {
+      return {
+        name: item.tagName,
+        value: Number(item.count),
+      };
+    });
+    return {
+      data: tagData,
+    };
+  }
+
   // ********************************小程序相关************************************
 
   async getLatestBlogList(num: number) {

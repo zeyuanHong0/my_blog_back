@@ -35,6 +35,8 @@ export class StatsService {
       categoryCount,
       weeklyAddedBlogCount,
       blogPublishTrend,
+      categoryDistribution,
+      tagDistribution,
     ] = await Promise.all([
       this.blogService.getAllBlogCount(),
       this.blogService.getPublishedBlogCount(),
@@ -42,6 +44,8 @@ export class StatsService {
       this.categoryService.getCategoryCount(),
       this.blogService.getWeeklyAddedBlogCount(),
       this.blogService.getLast7DaysBlogPublishTrend(),
+      this.blogService.getCategoryDistribution(),
+      this.blogService.getTop5Tags(),
     ]);
     return {
       data: {
@@ -51,6 +55,8 @@ export class StatsService {
         categoryCount: categoryCount.data,
         weeklyAddedBlogCount: weeklyAddedBlogCount.data,
         blogPublishTrend: blogPublishTrend.data,
+        categoryDistribution: categoryDistribution.data,
+        tagDistribution: tagDistribution.data,
       },
     };
   }
