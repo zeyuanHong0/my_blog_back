@@ -394,7 +394,7 @@ export class BlogService {
       };
     });
     const trendData = {
-      dateList: trend.map((item) => item.date),
+      dateList: trend.map((item) => dayjs(item.date).format('MM-DD')),
       data: trend.map((item) => item.count),
     };
 
