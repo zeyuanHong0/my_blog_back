@@ -9,6 +9,8 @@ import { User } from '@/user/entities/user.entity';
 import { Category } from '@/category/entities/category.entity';
 import { AiService } from '@/ai/ai.service';
 import dayjs from '@/common/dayjs.config';
+import { JwtPayload } from '@/auth/types/jwt-payload.type';
+import { Role } from '@/enum/role.enum';
 
 @Injectable()
 export class BlogService {
@@ -101,7 +103,9 @@ export class BlogService {
     pageSize: number,
     searchCategoryId: string,
     searchTags: string,
+    user: JwtPayload,
   ) {
+    const { id, accountType } = user;
     const queryBuilder = this.blogRepository
       .createQueryBuilder('blog')
       .leftJoinAndSelect('blog.tags', 'tag')
@@ -118,6 +122,12 @@ export class BlogService {
         'category.name',
       ])
       .where('blog.is_delete = :isDelete', { isDelete: 0 })
+      .andWhere(
+        accountType === Role.ADMIN ? '1=1' : 'blog.createUser = :userId',
+        {
+          userId: id,
+        },
+      )
       .orderBy('blog.createTime', 'DESC')
       .skip((pageNum - 1) * pageSize)
       .take(pageSize);
@@ -230,7 +240,7 @@ export class BlogService {
     };
   }
 
-  async update(updateBlogDto: UpdateBlogDto) {
+  async update(updateBlogDto: UpdateBlogDto, user: JwtPayload) {
     const {
       id,
       category: categoryId,
@@ -238,6 +248,7 @@ export class BlogService {
       aiSummary,
       ...blogData
     } = updateBlogDto;
+    const { id: userId, accountType } = user;
     const blog = await this.blogRepository.findOne({
       where: { id, is_delete: 0 },
       relations: ['tags'],
@@ -245,14 +256,19 @@ export class BlogService {
     if (!blog) {
       throw new NotFoundException('博客不存在');
     }
-    // 查找分类
-    const findCategory = await this.categoryRepository.findOne({
-      where: { id: categoryId, is_delete: 0 },
-    });
-    if (!findCategory) {
-      throw new NotFoundException('分类不存在');
+    if (blog.createUser !== userId && accountType !== Role.ADMIN) {
+      throw new NotFoundException('无权限修改该博客');
     }
-    blog.category = findCategory;
+    // 查找分类
+    if (categoryId) {
+      const findCategory = await this.categoryRepository.findOne({
+        where: { id: categoryId, is_delete: 0 },
+      });
+      if (!findCategory) {
+        throw new NotFoundException('分类不存在');
+      }
+      blog.category = findCategory;
+    }
     // 查出新的标签集合
     const newTags = await this.tagRepository.find({
       where: { id: In(tagIds) },
@@ -285,12 +301,16 @@ export class BlogService {
       });
   }
 
-  async changeStatus(id: string, published: number) {
+  async changeStatus(id: string, published: number, user: JwtPayload) {
+    const { id: userId, accountType } = user;
     const blog = await this.blogRepository.findOne({
       where: { id, is_delete: 0 },
     });
     if (!blog) {
       throw new NotFoundException('博客不存在');
+    }
+    if (blog.createUser !== userId && accountType !== Role.ADMIN) {
+      throw new NotFoundException('无权限修改该博客');
     }
     blog.published = published;
     await this.blogRepository.save(blog);
@@ -299,7 +319,17 @@ export class BlogService {
     };
   }
 
-  async remove(id: string) {
+  async remove(id: string, user: JwtPayload) {
+    const { id: userId, accountType } = user;
+    const blog = await this.blogRepository.findOne({
+      where: { id, is_delete: 0 },
+    });
+    if (!blog) {
+      throw new NotFoundException('博客不存在');
+    }
+    if (blog.createUser !== userId && accountType !== Role.ADMIN) {
+      throw new NotFoundException('无权限删除该博客');
+    }
     await this.blogRepository.update(id, { is_delete: 1 });
     return {
       message: '博客删除成功',

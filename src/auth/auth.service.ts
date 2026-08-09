@@ -23,7 +23,7 @@ import { ConfigEnum } from '@/enum/config.enum';
 import { OAuthProvider } from '@/enum/oauth-provider.enum';
 import type { GithubUser, GithubEmail } from './types/github-user.type';
 import { getAxiosConfig } from '@/utils';
-import { JwtPayload } from '@/auth/types/jwt-payload.type';
+import { JwtTokenPayload } from '@/auth/types/jwt-payload.type';
 
 @Injectable()
 export class AuthService {
@@ -197,7 +197,7 @@ export class AuthService {
 
     // 加密密码
     const hashedPassword = await bcrypt.hash(password, 10);
-    let payload: JwtPayload;
+    let payload: JwtTokenPayload;
     if (existingEmailUser && !existingEmailUser.password) {
       // 合并 OAuth 账号：同步更新用户名和密码
       await this.userService.update(existingEmailUser.id, {
