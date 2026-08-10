@@ -110,6 +110,7 @@ export class BlogService {
       .createQueryBuilder('blog')
       .leftJoinAndSelect('blog.tags', 'tag')
       .leftJoinAndSelect('blog.category', 'category')
+      .leftJoinAndSelect('blog.createUserRelation', 'user')
       .select([
         'blog.id',
         'blog.title',
@@ -120,6 +121,8 @@ export class BlogService {
         'tag.name',
         'category.id',
         'category.name',
+        'user.id',
+        'user.username',
       ])
       .where('blog.is_delete = :isDelete', { isDelete: 0 })
       .andWhere(
@@ -155,10 +158,17 @@ export class BlogService {
     }
 
     const [blogList, total] = await queryBuilder.getManyAndCount();
+    const list = blogList.map(({ createUserRelation, ...rest }) => ({
+      ...rest,
+      author: {
+        id: createUserRelation.id,
+        name: createUserRelation.username,
+      }, // 设置一下别名
+    }));
 
     return {
       data: {
-        list: blogList,
+        list,
         total,
         pageNum: Number(pageNum),
         pageSize: Number(pageSize),
