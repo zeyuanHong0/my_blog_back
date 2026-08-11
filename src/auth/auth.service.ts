@@ -72,6 +72,22 @@ export class AuthService {
     };
   }
 
+  async forgetPasswordCheckEmail(email: string) {
+    // 校验邮箱格式
+    const reg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!reg.test(email)) {
+      throw new BadRequestException('邮箱格式不正确');
+    }
+    const user = await this.userService.findUserByEmail(email);
+
+    return {
+      data: {
+        checkEmail: !!user,
+      },
+      message: user ? '邮箱可用' : '该邮箱未注册',
+    };
+  }
+
   // 发送验证码
   async sendCode(email: string) {
     const last = await this.emailCodeRepository.findOne({
@@ -134,6 +150,44 @@ export class AuthService {
     await this.emailCodeRepository.save(record);
 
     return true;
+  }
+
+  // 签发重置密码凭证
+  generateResetToken(email: string) {
+    const token = this.jwtService.sign(
+      { email, type: 'reset_password' },
+      { expiresIn: '5m' },
+    );
+    return {
+      data: { resetToken: token },
+      message: '验证码校验成功',
+    };
+  }
+
+  // 重置密码
+  async resetPassword(resetToken: string, newPassword: string) {
+    let payload: { email: string; type: string };
+    try {
+      payload = this.jwtService.verify(resetToken);
+    } catch {
+      throw new BadRequestException('凭证无效或已过期');
+    }
+
+    if (payload.type !== 'reset_password') {
+      throw new BadRequestException('凭证类型错误');
+    }
+
+    const user = await this.userService.findUserByEmail(payload.email);
+    if (!user) {
+      throw new BadRequestException('用户不存在');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await this.userService.update(user.id, { password: hashedPassword });
+
+    return {
+      message: '密码重置成功',
+    };
   }
 
   // 验证用户

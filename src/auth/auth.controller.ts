@@ -38,6 +38,28 @@ export class AuthController {
     return this.authService.checkEmailBeforeRegister(email);
   }
 
+  @Post('/forgotPassword/checkEmail')
+  forgetPasswordCheckEmail(@Body('email') email: string) {
+    return this.authService.forgetPasswordCheckEmail(email);
+  }
+
+  @Post('/forgotPassword/verifyCode')
+  async forgetPasswordVerifyCode(
+    @Body('email') email: string,
+    @Body('code') code: string,
+  ) {
+    await this.authService.verifyCode(email, code);
+    return this.authService.generateResetToken(email);
+  }
+
+  @Post('/forgotPassword/resetPassword')
+  resetPassword(
+    @Body('resetToken') resetToken: string,
+    @Body('newPassword') newPassword: string,
+  ) {
+    return this.authService.resetPassword(resetToken, newPassword);
+  }
+
   @Post('sendCode')
   sendCode(@Body('email') email: string) {
     return this.authService.sendCode(email);
