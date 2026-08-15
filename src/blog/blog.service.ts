@@ -77,6 +77,7 @@ export class BlogService {
       .createQueryBuilder('blog')
       .leftJoinAndSelect('blog.tags', 'tags')
       .leftJoinAndSelect('blog.category', 'category')
+      .leftJoinAndSelect('blog.createUserRelation', 'user')
       .where('blog.is_delete = :isDelete', { isDelete: 0 })
       .andWhere('blog.published = :published', { published: 1 })
       .select([
@@ -88,12 +89,22 @@ export class BlogService {
         'tags.name',
         'tags.icon',
         'category.name',
+        'user.id',
+        'user.username',
       ])
       .orderBy('blog.createTime', 'DESC')
       .getMany();
 
+    const result = blogList.map(({ createUserRelation, ...rest }) => ({
+      ...rest,
+      author: {
+        id: createUserRelation.id,
+        name: createUserRelation.username,
+      },
+    }));
+
     return {
-      data: blogList,
+      data: result,
     };
   }
 
@@ -208,6 +219,7 @@ export class BlogService {
       .createQueryBuilder('blog')
       .leftJoinAndSelect('blog.tags', 'tags')
       .leftJoinAndSelect('blog.category', 'category')
+      .leftJoinAndSelect('blog.createUserRelation', 'user')
       .where('blog.id = :id', { id })
       .andWhere('blog.is_delete = 0 AND blog.published = 1')
       .select([
@@ -224,13 +236,25 @@ export class BlogService {
         'tags.icon_dark',
         'category.id',
         'category.name',
+        'user.id',
+        'user.username',
       ])
       .getOne();
     if (!blog) {
       throw new NotFoundException('博客不存在');
     }
+    const { createUserRelation, ...rest } = blog;
+    const result = {
+      ...rest,
+      author: createUserRelation
+        ? {
+            id: createUserRelation.id,
+            name: createUserRelation.username,
+          }
+        : null,
+    };
     return {
-      data: blog,
+      data: result,
     };
   }
 

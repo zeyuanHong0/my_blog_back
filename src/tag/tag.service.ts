@@ -101,6 +101,7 @@ export class TagService {
         },
       )
       .leftJoinAndSelect('blogs.category', 'blog_category')
+      .leftJoinAndSelect('blogs.createUserRelation', 'user')
       .where('tag.id = :id', { id })
       .select([
         'tag.id',
@@ -113,11 +114,26 @@ export class TagService {
         'blog_tags.id',
         'blog_tags.name',
         'blog_category.name',
+        'user.id',
+        'user.username',
       ])
       .getOne();
 
+    const result = {
+      ...tagInfo,
+      blogs: tagInfo?.blogs.map(({ createUserRelation, ...rest }) => ({
+        ...rest,
+        author: createUserRelation
+          ? {
+              id: createUserRelation.id,
+              name: createUserRelation.username,
+            }
+          : null,
+      })),
+    };
+
     return {
-      data: tagInfo,
+      data: result,
     };
   }
 

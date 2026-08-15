@@ -127,6 +127,7 @@ export class CategoryService {
           published: 1,
         },
       )
+      .leftJoinAndSelect('blogs.createUserRelation', 'user')
       .where('category.id = :id', { id })
       .select([
         'category.id',
@@ -136,6 +137,8 @@ export class CategoryService {
         'blogs.description',
         'blogs.createTime',
         'blogs.updateTime',
+        'user.id',
+        'user.username',
       ])
       .getOne();
 
@@ -171,8 +174,20 @@ export class CategoryService {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       (blog as any).tags = blogTagMap.get(blog.id) ?? [];
     }
+    const result = {
+      ...category,
+      blogs: category.blogs.map(({ createUserRelation, ...rest }) => ({
+        ...rest,
+        author: createUserRelation
+          ? {
+              id: createUserRelation.id,
+              name: createUserRelation.username,
+            }
+          : null,
+      })),
+    };
     return {
-      data: category,
+      data: result,
     };
   }
 
