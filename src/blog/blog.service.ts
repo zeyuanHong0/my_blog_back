@@ -371,9 +371,15 @@ export class BlogService {
   }
 
   // 获取已发布博客数量
-  async getPublishedBlogCount() {
+  async getPublishedBlogCount(user?: JwtPayload) {
     const blogCount = await this.blogRepository.count({
-      where: { is_delete: 0, published: 1 },
+      where: {
+        is_delete: 0,
+        published: 1,
+        ...(user && user.accountType !== Role.ADMIN
+          ? { createUser: user.id }
+          : {}),
+      },
     });
     return {
       data: blogCount,
@@ -381,9 +387,14 @@ export class BlogService {
   }
 
   // 获取博客总数
-  async getAllBlogCount() {
+  async getAllBlogCount(user?: JwtPayload) {
     const blogCount = await this.blogRepository.count({
-      where: { is_delete: 0 },
+      where: {
+        is_delete: 0,
+        ...(user && user.accountType !== Role.ADMIN
+          ? { createUser: user.id }
+          : {}),
+      },
     });
     return {
       data: blogCount,
@@ -391,7 +402,7 @@ export class BlogService {
   }
 
   // 获取本周新增文章数（与上周环比）
-  async getWeeklyAddedBlogCount() {
+  async getWeeklyAddedBlogCount(user?: JwtPayload) {
     const currentWeekStart = dayjs().startOf('isoWeek').startOf('day');
     const currentWeekEnd = currentWeekStart.add(1, 'week');
     const lastWeekStart = currentWeekStart.subtract(1, 'week');
@@ -402,6 +413,12 @@ export class BlogService {
         .andWhere('blog.published = :published', { published: 1 })
         .andWhere('blog.createTime >= :start')
         .andWhere('blog.createTime < :end')
+        .andWhere(
+          user && user.accountType !== Role.ADMIN
+            ? 'blog.createUser = :createUser'
+            : '1=1',
+          { createUser: user?.id },
+        )
         .setParameters({ start, end })
         .getCount();
 
@@ -430,7 +447,7 @@ export class BlogService {
   }
 
   // 近 7 天的发文趋势
-  async getLast7DaysBlogPublishTrend() {
+  async getLast7DaysBlogPublishTrend(user?: JwtPayload) {
     const start = dayjs().subtract(6, 'day').startOf('day');
     const end = dayjs().endOf('day');
     const trendRaw = await this.blogRepository
@@ -441,6 +458,12 @@ export class BlogService {
         start: start.toDate(),
         end: end.toDate(),
       })
+      .andWhere(
+        user && user.accountType !== Role.ADMIN
+          ? 'blog.createUser = :createUser'
+          : '1=1',
+        { createUser: user?.id },
+      )
       .select("DATE_FORMAT(blog.createTime, '%Y-%m-%d')", 'date')
       .addSelect('COUNT(*)', 'count')
       .groupBy("DATE_FORMAT(blog.createTime, '%Y-%m-%d')")
@@ -468,12 +491,18 @@ export class BlogService {
   }
 
   // 分类占比
-  async getCategoryDistribution() {
+  async getCategoryDistribution(user?: JwtPayload) {
     const raw = await this.blogRepository
       .createQueryBuilder('blog')
       .leftJoinAndSelect('blog.category', 'category')
       .where('blog.is_delete = :isDelete', { isDelete: 0 })
       .andWhere('blog.published = :published', { published: 1 })
+      .andWhere(
+        user && user.accountType !== Role.ADMIN
+          ? 'blog.createUser = :createUser'
+          : '1=1',
+        { createUser: user?.id },
+      )
       .select('category.name', 'categoryName')
       .addSelect('COUNT(blog.id)', 'count')
       .groupBy('category.id')
@@ -492,12 +521,18 @@ export class BlogService {
   }
 
   // 标签top5
-  async getTop5Tags() {
+  async getTop5Tags(user?: JwtPayload) {
     const raw = await this.blogRepository
       .createQueryBuilder('blog')
       .leftJoinAndSelect('blog.tags', 'tags')
       .where('blog.is_delete = :isDelete', { isDelete: 0 })
       .andWhere('blog.published = :published', { published: 1 })
+      .andWhere(
+        user && user.accountType !== Role.ADMIN
+          ? 'blog.createUser = :createUser'
+          : '1=1',
+        { createUser: user?.id },
+      )
       .select('tags.name', 'tagName')
       .addSelect('COUNT(blog.id)', 'count')
       .groupBy('tags.id')

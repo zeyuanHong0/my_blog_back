@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { BlogService } from '@/blog/blog.service';
 import { TagService } from '@/tag/tag.service';
 import { CategoryService } from '@/category/category.service';
+import type { JwtPayload } from '@/auth/types/jwt-payload.type';
 
 @Injectable()
 export class StatsService {
@@ -27,7 +28,7 @@ export class StatsService {
     };
   }
 
-  async getDashboardStats() {
+  async getDashboardStats(user: JwtPayload) {
     const [
       allBlogCount,
       publishedBlogCount,
@@ -38,14 +39,14 @@ export class StatsService {
       categoryDistribution,
       tagDistribution,
     ] = await Promise.all([
-      this.blogService.getAllBlogCount(),
-      this.blogService.getPublishedBlogCount(),
+      this.blogService.getAllBlogCount(user),
+      this.blogService.getPublishedBlogCount(user),
       this.tagService.getTagCount(),
       this.categoryService.getCategoryCount(),
-      this.blogService.getWeeklyAddedBlogCount(),
-      this.blogService.getLast7DaysBlogPublishTrend(),
-      this.blogService.getCategoryDistribution(),
-      this.blogService.getTop5Tags(),
+      this.blogService.getWeeklyAddedBlogCount(user),
+      this.blogService.getLast7DaysBlogPublishTrend(user),
+      this.blogService.getCategoryDistribution(user),
+      this.blogService.getTop5Tags(user),
     ]);
     return {
       data: {
