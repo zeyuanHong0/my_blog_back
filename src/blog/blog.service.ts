@@ -559,6 +559,7 @@ export class BlogService {
     const blogList = await this.blogRepository
       .createQueryBuilder('blog')
       .leftJoinAndSelect('blog.tags', 'tags')
+      .leftJoinAndSelect('blog.createUserRelation', 'user')
       .where('blog.is_delete = :isDelete', { isDelete: 0 })
       .andWhere('blog.published = :published', { published: 1 })
       .select([
@@ -568,13 +569,23 @@ export class BlogService {
         'blog.createTime',
         'tags.id',
         'tags.name',
+        'user.id',
+        'user.username',
       ])
       .orderBy('blog.createTime', 'DESC')
       .take(num)
       .getMany();
 
+    const result = blogList.map(({ createUserRelation, ...rest }) => ({
+      ...rest,
+      author: {
+        id: createUserRelation.id,
+        name: createUserRelation.username,
+      },
+    }));
+
     return {
-      data: blogList,
+      data: result,
     };
   }
 
@@ -582,6 +593,7 @@ export class BlogService {
     const blogList = await this.blogRepository
       .createQueryBuilder('blog')
       .leftJoinAndSelect('blog.tags', 'tags')
+      .leftJoinAndSelect('blog.createUserRelation', 'user')
       .where('blog.is_delete = :isDelete', { isDelete: 0 })
       .andWhere('blog.published = :published', { published: 1 })
       .select([
@@ -591,11 +603,21 @@ export class BlogService {
         'blog.createTime',
         'tags.id',
         'tags.name',
+        'user.id',
+        'user.username',
       ])
       .orderBy('blog.createTime', 'DESC')
       .getMany();
+
+    const result = blogList.map(({ createUserRelation, ...rest }) => ({
+      ...rest,
+      author: {
+        id: createUserRelation.id,
+        name: createUserRelation.username,
+      },
+    }));
     return {
-      data: blogList,
+      data: result,
     };
   }
 
