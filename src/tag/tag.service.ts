@@ -186,6 +186,7 @@ export class TagService {
           published: 1,
         },
       )
+      .leftJoinAndSelect('blogs.createUserRelation', 'user')
       .where('tag.id = :id', { id })
       .select([
         'tag.id',
@@ -195,10 +196,23 @@ export class TagService {
         'blogs.description',
         'blogs.createTime',
         'blogs.updateTime',
+        'user.id',
+        'user.username',
       ])
       .getOne();
+
+    const result = tagInfo?.blogs.map(({ createUserRelation, ...rest }) => ({
+      ...rest,
+      author: {
+        id: createUserRelation.id,
+        name: createUserRelation.username,
+      },
+    }));
     return {
-      data: tagInfo,
+      data: {
+        ...tagInfo,
+        blogs: result,
+      },
     };
   }
 }

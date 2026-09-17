@@ -240,6 +240,7 @@ export class CategoryService {
           published: 1,
         },
       )
+      .leftJoinAndSelect('blogs.createUserRelation', 'user')
       .where('category.id = :id', { id })
       .select([
         'category.id',
@@ -249,6 +250,8 @@ export class CategoryService {
         'blogs.description',
         'blogs.createTime',
         'blogs.updateTime',
+        'user.id',
+        'user.username',
       ])
       .getOne();
 
@@ -283,6 +286,11 @@ export class CategoryService {
     for (const blog of category.blogs) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       (blog as any).tags = blogTagMap.get(blog.id) ?? [];
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      (blog as any).author = {
+        id: blog.createUserRelation.id,
+        name: blog.createUserRelation.username,
+      };
     }
 
     return {
