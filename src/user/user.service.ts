@@ -153,9 +153,16 @@ export class UserService {
         id: 'DESC',
       },
     });
+    const list = userList.map((user) => {
+      const { is_delete, ...other } = user;
+      return {
+        ...other,
+        isDelete: is_delete,
+      };
+    });
     return {
       data: {
-        list: userList,
+        list,
         total,
         pageNum: Number(pageNum),
         pageSize: Number(pageSize),
